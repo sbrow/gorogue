@@ -1,11 +1,12 @@
 // Package ui handles all front-end operations, including drawing the UI
 // and switching between menus.
-package gorogue
+package client
 
 import (
 	"errors"
 	"fmt"
 	termbox "github.com/nsf/termbox-go"
+	. "github.com/sbrow/gorogue"
 	"github.com/sbrow/gorogue/keybinds"
 )
 
@@ -140,7 +141,6 @@ type Bounds [2]Point
 type UI struct {
 	name   string
 	bounds Bounds
-	Client *Client
 	Border *Border          // The UI's border (if any).
 	Views  map[string]*View // Views contained in this UI.
 }
@@ -208,7 +208,7 @@ func (u *UI) Name() string {
 }
 
 // Run starts playing this UI.
-func (u *UI) Run() {
+func Run() {
 	err := termbox.Init()
 	defer termbox.Close()
 	if err != nil {
@@ -218,7 +218,7 @@ func (u *UI) Run() {
 
 main:
 	for {
-		u.Draw()
+		ui.Draw()
 		action, err := keybinds.Input()
 		if err != nil && err.Error() != keybinds.KeyNotBoundError {
 			panic(err)
@@ -228,11 +228,8 @@ main:
 			case "Quit":
 				break main
 			case "Move":
-				switch action.Args[0].(string) {
-				case "East":
-					String(20, 10, termbox.ColorDefault, termbox.ColorDefault, "Move East!")
-					_ = termbox.PollEvent()
-				}
+				dir := action.Args[0].(Direction)
+				Move(std.Squad[0], dir)
 			}
 		}
 	}
@@ -280,8 +277,8 @@ const (
 // View is a window into a Map. Views can be any size.
 type View struct {
 	Bounds
-	Origin Point // Where this view is located in the UI.
-	Map    *Map  // The Map data is drawn from.
+	Origin Point   // Where this view is located in the UI.
+	Map    *string // The Map data is drawn from.
 }
 
 // NewView returns a newly created view.
@@ -291,7 +288,7 @@ type View struct {
 //
 // origin is the location in the UI where
 // you want this view to be placed.
-func NewView(bounds Bounds, m *Map, origin Point) *View {
+func NewView(bounds Bounds, m *string, origin Point) *View {
 	v := &View{Bounds: bounds, Origin: origin, Map: m}
 	return v
 }
@@ -300,10 +297,9 @@ func NewView(bounds Bounds, m *Map, origin Point) *View {
 func (v *View) Draw() error {
 	defer termbox.Flush()
 
-	fmt.Println(v.Map.Name)
-	*v.Map = CurrClient.Map(v.Map.Name)
+	m := GetMap(*v.Map)
 	// Get tiles from the map
-	tiles := v.Map.TileSlice(v.Bounds[0].X, v.Bounds[0].Y, v.Bounds[1].X,
+	tiles := m.TileSlice(v.Bounds[0].X, v.Bounds[0].Y, v.Bounds[1].X,
 		v.Bounds[1].Y)
 
 	// Draw the tiles.

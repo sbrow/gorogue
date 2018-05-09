@@ -15,6 +15,11 @@ const (
 	SouthWest
 )
 
+type MoveArgs struct {
+	Actors
+	Points []Point
+}
+
 type Point struct {
 	X int
 	Y int
@@ -22,4 +27,9 @@ type Point struct {
 
 func (p *Point) Ints() (x, y int) {
 	return p.X, p.Y
+}
+
+type SpawnReply struct {
+	Map    *string
+	Actors Actors
 }

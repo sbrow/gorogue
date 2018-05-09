@@ -1,7 +1,8 @@
-package gorogue
+package client
 
 import (
 	"fmt"
+	. "github.com/sbrow/gorogue"
 )
 
 // UITemplate provides some example UIs to help with starting your game.
@@ -11,7 +12,7 @@ type UITemplate struct {
 
 // Fullscreen returns a minimum terminal sized UI (80x24),
 // with one view into a map.
-func Fullscreen(m *Map) *UITemplate {
+func Fullscreen(m *string) *UITemplate {
 	fmt.Println("Fullscreen", m)
 	// Initialize back-end
 

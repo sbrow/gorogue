@@ -2,6 +2,7 @@ package gorogue
 
 import (
 	"fmt"
+	. "github.com/sbrow/gorogue"
 	"log"
 	"net"
 	"net/rpc"
@@ -18,7 +19,7 @@ type Server struct {
 	Maps []*Map
 }
 
-func NewServer(host, port string, maps ...*Map) *Server {
+func Start(host, port string, maps ...*Map) *Server {
 	s := &Server{host, port, maps}
 	go s.HandleRequests()
 	return s
@@ -53,18 +54,8 @@ func (s *Server) Map(args *string, reply *Map) error {
 	return nil
 }
 
-type MoveArgs struct {
-	Actors
-	Points []Point
-}
-
 func (s *Server) Move(args *MoveArgs, reply *bool) {
 
-}
-
-type SpawnReply struct {
-	Map    Map
-	Actors Actors
 }
 
 // func (s *Server) Spawn(args *Player, reply *Map) error {
@@ -72,6 +63,6 @@ func (s *Server) Spawn(args Actors, reply *SpawnReply) error {
 	m := s.Maps[0]
 	args[0].SetPos(Point{5, 5})
 	m.Actors = append(m.Actors, args...)
-	*reply = SpawnReply{*m, m.Actors}
+	*reply = SpawnReply{&m.Name, m.Actors}
 	return nil
 }

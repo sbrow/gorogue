@@ -3,6 +3,7 @@ package keybinds
 import (
 	"errors"
 	termbox "github.com/nsf/termbox-go"
+	rogue "github.com/sbrow/gorogue"
 )
 
 const KeyNotBoundError string = "Key not bound"
@@ -18,7 +19,7 @@ func init() {
 
 	//Actions
 	quit := Action{"Quit", nil}
-	moveEast := Action{"Move", []interface{}{"East"}} //TODO: Fix
+	moveEast := Action{"Move", []interface{}{rogue.East}}
 
 	Keybinds = map[Key]Action{
 		ESC: quit,

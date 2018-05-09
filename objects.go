@@ -79,7 +79,7 @@ type PlayerJSON struct {
 	HP     int
 }
 
-func NewPlayer(name string, pos *Point, Sprite termbox.Cell, hp int) *Player {
+func NewPlayer(name string, Sprite termbox.Cell, hp int) *Player {
 	return &Player{
 		name:   "Player",
 		pos:    nil,
