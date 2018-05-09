@@ -20,14 +20,20 @@ func init() {
 	quit := Action{"Quit", nil}
 	moveNorth := Action{"Move", []interface{}{rogue.North}}
 	moveNorthEast := Action{"Move", []interface{}{rogue.NorthEast}}
+	moveNorthWest := Action{"Move", []interface{}{rogue.NorthWest}}
 	moveEast := Action{"Move", []interface{}{rogue.East}}
 	moveSouth := Action{"Move", []interface{}{rogue.South}}
+	moveSouthEast := Action{"Move", []interface{}{rogue.SouthEast}}
 	moveWest := Action{"Move", []interface{}{rogue.West}}
+	moveSouthWest := Action{"Move", []interface{}{rogue.SouthWest}}
 
 	Keybinds = map[Key]Action{
 		ESC:            quit,
 		Key{0, 0, 'k'}: moveNorth,
 		Key{0, 0, 'u'}: moveNorthEast,
+		Key{0, 0, 'y'}: moveNorthWest,
+		Key{0, 0, 'b'}: moveSouthWest,
+		Key{0, 0, 'n'}: moveSouthEast,
 		Key{0, 0, 'l'}: moveEast,
 		Key{0, 0, 'j'}: moveSouth,
 		Key{0, 0, 'h'}: moveWest,

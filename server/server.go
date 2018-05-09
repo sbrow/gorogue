@@ -1,4 +1,8 @@
-package gorogue
+// Package server handles the bulk of game and NPC logic.
+//
+// TODO: SpawnNPC() should always trigger a new goroutine to handle that NPCs
+// logic
+package server
 
 import (
 	"fmt"
@@ -54,17 +58,50 @@ func (s *Server) Map(args *string, reply *Map) error {
 	return nil
 }
 
+// TODO: Handle failure.
 func (s *Server) Move(args *MoveArgs, reply *bool) error {
+	// TODO: Fix
 	s.Maps[0].Actors[0].SetPos(args.Points[0])
 	*reply = true
 	return nil
 }
 
-// func (s *Server) Spawn(args *Player, reply *Map) error {
 func (s *Server) Spawn(args Actors, reply *SpawnReply) error {
+	// TODO: Fix
 	m := s.Maps[0]
 	args[0].SetPos(Point{5, 5})
 	m.Actors = append(m.Actors, args...)
 	*reply = SpawnReply{&m.Name, m.Actors}
 	return nil
 }
+
+// InitiativeMode determines how Actors are given priority.
+//
+// In Single mode, Only one character may have priority at any given time.
+//
+// In Team mode, all characters on a team act  in unison.
+//
+// In All mode, all characters are given "identical" priority. This is used for
+// realtime play.
+type InitiativeMode uint8
+
+const (
+	Single InitiativeMode = iota
+	Team
+	All
+)
+
+// TickMode determines how Tick() is handled.
+//
+// In Action mode, each character can perform one action per Tick. This is the
+// default mode.
+//
+// In AP mode, characters can perform actions whenever they have priority,
+// only limited by whatever the designer wants to use instead of ticks,
+// (Usually Action Points, or similar).
+type TickMode uint8
+
+const (
+	Action TickMode = iota
+	AP
+)

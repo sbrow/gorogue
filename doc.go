@@ -20,7 +20,5 @@
 //
 // TODO: Action Control
 //
-// TODO: Keybindings package
-//
 // TODO: Status effects?
 package gorogue
