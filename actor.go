@@ -63,6 +63,11 @@ func (a *Actors) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type NPC struct {
+	object
+	hp int
+}
+
 // Player is any playable character. Players are controlled by clients.
 // Each client can control more than one Player.
 type Player struct {

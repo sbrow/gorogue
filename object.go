@@ -8,19 +8,19 @@ import (
 type Object interface {
 	Name() string
 	MarshalJSON() ([]byte, error)
-	Pos() *Point
-	SetPos(pt Point)
+	Pos() *Pos
+	SetPos(p Pos)
 	Sprite() termbox.Cell
 	UnmarshalJSON(data []byte) error
 }
 
 type object struct {
 	name   string
-	pos    *Point
+	pos    *Pos
 	sprite termbox.Cell
 }
 
-func newObject(name string, pos *Point, sprite termbox.Cell) *object {
+func newObject(name string, pos *Pos, sprite termbox.Cell) *object {
 	return &object{
 		name:   name,
 		pos:    pos,
@@ -44,12 +44,12 @@ func (o *object) Name() string {
 	return o.name
 }
 
-func (o *object) Pos() *Point {
+func (o *object) Pos() *Pos {
 	return o.pos
 }
 
-func (o *object) SetPos(pt Point) {
-	o.pos = &pt
+func (o *object) SetPos(p Pos) {
+	o.pos = &p
 }
 
 func (o *object) Sprite() termbox.Cell {
@@ -70,6 +70,6 @@ func (o *object) UnmarshalJSON(data []byte) error {
 
 type ObjectJSON struct {
 	Name   string
-	Pos    *Point
+	Pos    *Pos
 	Sprite termbox.Cell
 }

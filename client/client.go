@@ -18,7 +18,7 @@ var ui *UI
 
 type client struct {
 	client *rpc.Client
-	Squad  Actors
+	Squad  []Player
 }
 
 // Connect initializes a connection to a server. It must be called before all other
@@ -30,7 +30,7 @@ func Connect(host, port string) {
 	}
 	std = &client{
 		client: jsonrpc.NewClient(conn),
-		Squad:  Actors(Actors{}),
+		Squad:  []Player{},
 	}
 }
 
@@ -50,7 +50,7 @@ func GetMap(name string) Map {
 func Move(a Actor, dir Direction) {
 	var args *MoveArgs
 	var reply *bool
-	args = &MoveArgs{Actors([]Actor{a}), []Point{*a.Pos()}}
+	args = &MoveArgs{Actors([]Actor{a}), []Pos{*a.Pos()}}
 
 	if dir&North == North {
 		args.Points[0].Y--
@@ -85,6 +85,11 @@ func Spawn(a ...Actor) Actors {
 		panic(err)
 	}
 	ui = Fullscreen(reply.Map).UI
-	std.Squad = reply.Actors
-	return std.Squad
+	for _, act := range reply.Actors {
+		switch v := act.(type) {
+		case *Player:
+			std.Squad = append(std.Squad, *v)
+		}
+	}
+	return reply.Actors
 }

@@ -10,10 +10,11 @@ import (
 // TODO: Implement Map chunking, allow sections of larger maps to be evaluated independently,
 // Evaluating their Tick before others, but pausing before beginning the next Tick.
 type Map struct {
-	Name   string
-	Height int
-	Width  int
-	Actors Actors
+	Name    string
+	Height  int
+	Width   int
+	NPCs    []NPC
+	Players []Player
 }
 
 // NewMap creates a new, empty map of given dimensions
@@ -22,8 +23,19 @@ func NewMap(w, h int, name string) *Map {
 	m.Width = w
 	m.Height = h
 	m.Name = name
-	m.Actors = Actors([]Actor{})
+	m.Players = []Player{}
 	return m
+}
+
+func (m *Map) Actors() Actors {
+	a := []Actor{}
+	for _, n := range m.NPCs {
+		a = append(a, Actor(&n))
+	}
+	for _, p := range m.Players {
+		a = append(a, Actor(&p))
+	}
+	return Actors(a)
 }
 
 // TileSlice returns the contents of all tiles within the bounds of
@@ -43,8 +55,8 @@ func (m *Map) TileSlice(x1, y1, x2, y2 int) [][]termbox.Cell {
 	}
 
 	// Draw Actors
-	for _, a := range m.Actors {
-		x, y := a.Pos().Ints()
+	for _, a := range m.Actors() {
+		x, y, _ := a.Pos().Ints()
 		if x1 <= x && x <= x2 &&
 			y1 <= y && y <= y2 {
 			ret[x-x1][y-y1] = a.Sprite()

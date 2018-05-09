@@ -21,10 +21,10 @@ const (
 // when calling a Server.Move().
 type MoveArgs struct {
 	Actors Actors
-	Points []Point
+	Points []Pos
 }
 
-// Point represents a point in 2 dimensional space.
+// Point represents a coordinate pair.
 type Point struct {
 	X int
 	Y int
@@ -33,6 +33,21 @@ type Point struct {
 // Ints returns the point as a pair of ints.
 func (p *Point) Ints() (x, y int) {
 	return p.X, p.Y
+}
+
+// Pos represents the position of an object.
+type Pos struct {
+	Point
+	Map int
+}
+
+func NewPos(x, y, z int) *Pos {
+	return &Pos{Point{x, y}, z}
+}
+
+// Ints returns the point as an int triple.
+func (p *Pos) Ints() (x, y, z int) {
+	return p.X, p.Y, p.Map
 }
 
 // Response passed from server to client

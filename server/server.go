@@ -61,17 +61,23 @@ func (s *Server) Map(args *string, reply *Map) error {
 // TODO: Handle failure.
 func (s *Server) Move(args *MoveArgs, reply *bool) error {
 	// TODO: Fix
-	s.Maps[0].Actors[0].SetPos(args.Points[0])
+	s.Maps[0].Players[0].SetPos(args.Points[0])
 	*reply = true
 	return nil
 }
 
+// Spawn spawns new actors on the first map.
 func (s *Server) Spawn(args Actors, reply *SpawnReply) error {
-	// TODO: Fix
-	m := s.Maps[0]
-	args[0].SetPos(Point{5, 5})
-	m.Actors = append(m.Actors, args...)
-	*reply = SpawnReply{&m.Name, m.Actors}
+	Map := 0
+	m := s.Maps[Map]
+	args[0].SetPos(*NewPos(5, 5, Map))
+	for _, a := range args {
+		switch v := a.(type) {
+		case *Player:
+			m.Players = append(m.Players, *v)
+		}
+	}
+	*reply = SpawnReply{&m.Name, args} // TODO: Fix
 	return nil
 }
 
