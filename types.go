@@ -1,5 +1,10 @@
 package gorogue
 
+type Action struct {
+	Actor  Actor
+	Action string
+}
+
 // Direction represents the cardinal and ordinal directions.
 // North points towards the top of the screen, east points to the right, etc.
 //

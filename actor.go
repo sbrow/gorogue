@@ -50,7 +50,7 @@ func (a *Actors) UnmarshalJSON(data []byte) error {
 		var actual Actor
 		switch Type {
 		case "Player":
-			actual = &Player{}
+			actual = &player{}
 		}
 
 		err = json.Unmarshal(r, actual)
@@ -70,20 +70,25 @@ type NPC struct {
 
 // Player is any playable character. Players are controlled by clients.
 // Each client can control more than one Player.
-type Player struct {
+type Player interface {
+	Actor
+	HP() int
+}
+
+type player struct {
 	object
 	hp int
 }
 
 // NewPlayer creates a new player using the standard '@' character sprite.
-func NewPlayer(name string, hp int) *Player {
-	return &Player{
+func NewPlayer(name string, hp int) Player {
+	return &player{
 		object: *newObject(name, nil, sprites.Default),
 		hp:     hp,
 	}
 }
 
-func (p *Player) JSON() PlayerJSON {
+func (p *player) JSON() PlayerJSON {
 	return PlayerJSON{
 		Type:       "Player",
 		ObjectJSON: p.object.JSON(),
@@ -91,13 +96,17 @@ func (p *Player) JSON() PlayerJSON {
 	}
 }
 
+func (p *player) HP() int {
+	return p.hp
+}
+
 // MarshalJSON converts the Player into JSON bytes.
-func (p *Player) MarshalJSON() ([]byte, error) {
+func (p *player) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.JSON())
 }
 
 // UnmarshalJSON reads JSON data into this Player.
-func (p *Player) UnmarshalJSON(data []byte) error {
+func (p *player) UnmarshalJSON(data []byte) error {
 	tmp := &PlayerJSON{}
 	if err := json.Unmarshal(data, &tmp); err != nil {
 		return err

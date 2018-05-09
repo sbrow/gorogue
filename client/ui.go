@@ -227,7 +227,7 @@ main:
 				break main
 			case "Move":
 				dir := action.Args[0].(Direction)
-				Move(&std.Squad[0], dir)
+				Move(std.Squad[0], dir)
 			}
 		}
 	}

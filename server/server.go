@@ -73,8 +73,8 @@ func (s *Server) Spawn(args Actors, reply *SpawnReply) error {
 	args[0].SetPos(*NewPos(5, 5, Map))
 	for _, a := range args {
 		switch v := a.(type) {
-		case *Player:
-			m.Players = append(m.Players, *v)
+		case Player:
+			m.Players = append(m.Players, v)
 		}
 	}
 	*reply = SpawnReply{&m.Name, args} // TODO: Fix
@@ -108,6 +108,6 @@ const (
 type TickMode uint8
 
 const (
-	Action TickMode = iota
+	ActionBased TickMode = iota
 	AP
 )

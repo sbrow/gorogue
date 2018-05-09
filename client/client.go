@@ -87,8 +87,8 @@ func Spawn(a ...Actor) Actors {
 	ui = Fullscreen(reply.Map).UI
 	for _, act := range reply.Actors {
 		switch v := act.(type) {
-		case *Player:
-			std.Squad = append(std.Squad, *v)
+		case Player:
+			std.Squad = append(std.Squad, v)
 		}
 	}
 	return reply.Actors
