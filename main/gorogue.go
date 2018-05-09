@@ -1,6 +1,7 @@
 package main
 
 import (
+	// "fmt"
 	termbox "github.com/nsf/termbox-go"
 	rogue "github.com/sbrow/gorogue"
 	"github.com/sbrow/gorogue/client"
@@ -15,6 +16,9 @@ func main() {
 	p := rogue.NewPlayer("Player",
 		termbox.Cell{'1', termbox.ColorWhite, termbox.ColorDefault}, 1)
 
-	client.Spawn(p)
+	_ = client.Spawn(p)[0]
+	// plyr := client.Spawn(p)[0]
+	// client.Move(plyr, rogue.East)
+
 	client.Run()
 }

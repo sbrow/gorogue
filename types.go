@@ -1,5 +1,7 @@
 package gorogue
 
+import termbox "github.com/nsf/termbox-go"
+
 // Direction represents the cardinal and ordinal directions.
 // North points towards the top of the screen, east points to the right, etc.
 type Direction uint8
@@ -16,7 +18,7 @@ const (
 )
 
 type MoveArgs struct {
-	Actors
+	Actors Actors
 	Points []Point
 }
 
@@ -33,3 +35,5 @@ type SpawnReply struct {
 	Map    *string
 	Actors Actors
 }
+
+var DefaultSprite = termbox.Cell{'@', termbox.ColorWhite, termbox.ColorDefault}

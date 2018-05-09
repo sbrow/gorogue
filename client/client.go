@@ -36,20 +36,40 @@ func GetMap(name string) Map {
 	return *reply
 }
 
-func Move(a Actor, x, y int) {
+func Move(a Actor, dir Direction) {
 	var args *MoveArgs
 	var reply *bool
-	args = &MoveArgs{Actors([]Actor{a}), []Point{Point{x, y}}}
+	args = &MoveArgs{Actors([]Actor{a}), []Point{*a.Pos()}}
+
+	switch dir {
+	case North:
+		args.Points[0].Y--
+	case East:
+		args.Points[0].X++
+	case West:
+		args.Points[0].X--
+	case South:
+		args.Points[0].Y++
+	case NorthEast:
+		args.Points[0].X++
+		args.Points[0].Y--
+	}
 	err := std.client.Call("Server.Move", args, &reply)
+	if *reply {
+		a.SetPos(args.Points[0])
+	}
 	if err != nil {
 		panic(err)
 	}
 }
 
-func Spawn(a ...Actor) error {
+func Spawn(a ...Actor) Actors {
 	var reply *SpawnReply
 	err := std.client.Call("Server.Spawn", Actors(a), &reply)
+	if err != nil {
+		panic(err)
+	}
 	ui = Fullscreen(reply.Map).UI
 	std.Squad = reply.Actors
-	return err
+	return std.Squad
 }

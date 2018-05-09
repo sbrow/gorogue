@@ -15,15 +15,22 @@ var Keybinds map[Key]Action
 func init() {
 	// Keys
 	ESC := Key{0, termbox.KeyEsc, 0}
-	j := Key{0, 0, 'j'}
 
 	//Actions
 	quit := Action{"Quit", nil}
+	moveNorth := Action{"Move", []interface{}{rogue.North}}
+	moveNorthEast := Action{"Move", []interface{}{rogue.NorthEast}}
 	moveEast := Action{"Move", []interface{}{rogue.East}}
+	moveSouth := Action{"Move", []interface{}{rogue.South}}
+	moveWest := Action{"Move", []interface{}{rogue.West}}
 
 	Keybinds = map[Key]Action{
-		ESC: quit,
-		j:   moveEast,
+		ESC:            quit,
+		Key{0, 0, 'k'}: moveNorth,
+		Key{0, 0, 'u'}: moveNorthEast,
+		Key{0, 0, 'l'}: moveEast,
+		Key{0, 0, 'j'}: moveSouth,
+		Key{0, 0, 'h'}: moveWest,
 	}
 }
 

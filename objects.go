@@ -2,6 +2,7 @@ package gorogue
 
 import (
 	"encoding/json"
+	// "fmt"
 	termbox "github.com/nsf/termbox-go"
 )
 
@@ -31,7 +32,20 @@ func (a *Actors) UnmarshalJSON(data []byte) error {
 	var raw []json.RawMessage
 	err := json.Unmarshal(data, &raw)
 	if err != nil {
-		return err
+		// s := string(data)
+		// s = s[10 : len(s)-26]
+		// fmt.Println("data", s)
+		// err = json.Unmarshal([]byte(s), &raw)
+
+		// var m map[string]*json.RawMessage
+		// err = json.Unmarshal(data, &m)
+		// fmt.Println(m)
+		// fmt.Println(s)
+		// fmt.Println("raw", raw)
+		// if err != nil {
+		// panic(err)
+		// }
+		// return nil
 	}
 
 	for _, r := range raw {

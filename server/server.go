@@ -54,8 +54,10 @@ func (s *Server) Map(args *string, reply *Map) error {
 	return nil
 }
 
-func (s *Server) Move(args *MoveArgs, reply *bool) {
-
+func (s *Server) Move(args *MoveArgs, reply *bool) error {
+	s.Maps[0].Actors[0].SetPos(args.Points[0])
+	*reply = true
+	return nil
 }
 
 // func (s *Server) Spawn(args *Player, reply *Map) error {
