@@ -18,6 +18,8 @@ import (
 //
 type Actor interface {
 	Object
+	Move(pos Pos) bool
+	// Move(i []interface{}) bool
 }
 
 // Actors is a wrapper for an array of Actors. It is necessary to
@@ -103,6 +105,11 @@ func (p *player) HP() int {
 // MarshalJSON converts the Player into JSON bytes.
 func (p *player) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.JSON())
+}
+
+func (p *player) Move(pos Pos) bool {
+	p.SetPos(pos)
+	return true
 }
 
 // UnmarshalJSON reads JSON data into this Player.

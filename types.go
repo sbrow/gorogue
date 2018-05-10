@@ -1,8 +1,13 @@
 package gorogue
 
 type Action struct {
-	Actor  Actor
-	Action string
+	Caller string
+	Args   [][]byte
+}
+
+type ActionResponse struct {
+	Msg   string
+	Reply bool
 }
 
 // Direction represents the cardinal and ordinal directions.
@@ -21,13 +26,6 @@ const (
 	SouthEast Direction = 10       // 1010
 	SouthWest Direction = 12       // 1100
 )
-
-// Arguments passed from client to server
-// when calling a Server.Move().
-type MoveArgs struct {
-	Actors Actors
-	Points []Pos
-}
 
 // Point represents a coordinate pair.
 type Point struct {

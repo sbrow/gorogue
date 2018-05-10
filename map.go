@@ -2,7 +2,7 @@ package gorogue
 
 import (
 	termbox "github.com/nsf/termbox-go"
-	"time"
+	"log"
 )
 
 // Map 2 dimensional plane containing tiles, objects and Actors. Each map with active
@@ -17,8 +17,8 @@ type Map struct {
 	NPCs    Actors
 	Players Actors // TODO: Temporary Solution
 	ticks   int
-	actions chan *Action
-	results chan *Action
+	actions chan Actor
+	results chan bool
 }
 
 // NewMap creates a new, empty map of given dimensions
@@ -27,7 +27,14 @@ func NewMap(w, h int, name string) *Map {
 	m.Width = w
 	m.Height = h
 	m.Name = name
-	go m.Tick()
+	m.actions = make(chan Actor)
+	m.results = make(chan bool)
+	go func() {
+		log.Println("Waiting for players...")
+		for len(m.Actors()) == 0 {
+		}
+		m.Tick()
+	}()
 	return m
 }
 
@@ -86,16 +93,22 @@ func (m *Map) Tiles() [][]termbox.Cell {
 // it executes the actions in the array (in order), and then increments m.ticks and
 // restarts.
 func (m *Map) Tick() {
-	for len(m.Actors()) == 0 {
-		time.Sleep(1000)
-	}
-	queue := make([]*Action, len(m.Actors()))
+	queue := make(Actors, len(m.Actors()))
+	// log.Println("Collecting Actions for next Tick...")
 	for i := 0; i < len(queue); i++ {
 		queue[i] = <-m.actions
 	}
-	for i := range queue {
-		m.results <- queue[i]
+	// log.Println("Actions collected, sending responses...")
+	for _ = range queue {
+		m.results <- true
 	}
+	// log.Println("Reponses sent.")
 	m.ticks++
+	log.Printf("Tick. (%d)\n", m.ticks)
 	m.Tick()
+}
+
+func (m *Map) WaitForTurn(a Actor) bool {
+	m.actions <- a
+	return <-m.results
 }

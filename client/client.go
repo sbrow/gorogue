@@ -3,6 +3,7 @@
 package client
 
 import (
+	"encoding/json"
 	"fmt"
 	. "github.com/sbrow/gorogue"
 	"net"
@@ -25,6 +26,7 @@ type client struct {
 // functions.
 func Connect(host, port string) {
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s%s", host, port))
+	defer conn.Close()
 	if err != nil {
 		panic(err)
 	}
@@ -32,6 +34,12 @@ func Connect(host, port string) {
 		client: jsonrpc.NewClient(conn),
 		Squad:  []Player{},
 	}
+	m, p := Spawn(NewPlayer("Player", 1))
+	for _, a := range p {
+		std.Squad = append(std.Squad, a.(Player))
+	}
+	ui = Fullscreen(m).UI
+	Run()
 }
 
 // GetMap asks the server for the map our Squad is on.
@@ -48,28 +56,33 @@ func GetMap(name string) Map {
 
 // Move requests that the server move actor a in direction dir.
 func Move(a Actor, dir Direction) {
-	var args *MoveArgs
-	var reply *bool
-	args = &MoveArgs{Actors([]Actor{a}), []Pos{*a.Pos()}}
+	args := &Action{
+		Caller: a.Name(),
+	}
+	p := a.Pos()
 
 	if dir&North == North {
-		args.Points[0].Y--
+		p.Y--
 	} else {
 		if dir&South == South {
-			args.Points[0].Y++
+			p.Y++
 		}
 	}
 	if dir&East == East {
-		args.Points[0].X++
+		p.X++
 	} else {
 		if dir&West == West {
-			args.Points[0].X--
+			p.X--
 		}
 	}
-	err := std.client.Call("Server.Move", args, &reply)
-	if *reply {
-		a.SetPos(args.Points[0])
+	data, err := json.Marshal(p)
+	if err != nil {
+		panic(err)
 	}
+	args.Args = [][]byte{data}
+
+	var reply *ActionResponse
+	err = std.client.Call("Server.Move", args, &reply)
 	if err != nil {
 		panic(err)
 	}
@@ -78,18 +91,11 @@ func Move(a Actor, dir Direction) {
 // Spawn requests that the server spawn actors.
 // The server determines where to spawn them and returns the map
 // where they spawned.
-func Spawn(a ...Actor) Actors {
+func Spawn(a ...Actor) (Map *string, Spawned Actors) {
 	var reply *SpawnReply
 	err := std.client.Call("Server.Spawn", Actors(a), &reply)
 	if err != nil {
 		panic(err)
 	}
-	ui = Fullscreen(reply.Map).UI
-	for _, act := range reply.Actors {
-		switch v := act.(type) {
-		case Player:
-			std.Squad = append(std.Squad, v)
-		}
-	}
-	return reply.Actors
+	return reply.Map, reply.Actors
 }

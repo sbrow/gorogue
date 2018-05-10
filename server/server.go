@@ -5,12 +5,16 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	. "github.com/sbrow/gorogue"
 	"log"
 	"net"
 	"net/rpc"
 	"net/rpc/jsonrpc"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 // Game logic is handled on the server.
@@ -21,15 +25,32 @@ type Server struct {
 	Host string
 	Port string
 	Maps []*Map
+	// Conns []*net.Conn
 }
 
 func Start(host, port string, maps ...*Map) *Server {
 	s := &Server{host, port, maps}
-	go s.HandleRequests()
+	c := make(chan os.Signal, 2)
+	signal.Notify(c)
+	go func() {
+		for sig := range c {
+			log.Println(sig)
+			switch sig {
+			case syscall.SIGTERM:
+				fallthrough
+			case syscall.SIGKILL:
+				fallthrough
+			case syscall.SIGINT:
+				log.Println("Exiting...")
+				os.Exit(1)
+			}
+		}
+	}()
+	s.handleRequests()
 	return s
 }
 
-func (s *Server) HandleRequests() {
+func (s *Server) handleRequests() {
 	server := rpc.NewServer()
 	server.Register(s)
 
@@ -42,7 +63,7 @@ func (s *Server) HandleRequests() {
 		if conn, err := l.Accept(); err != nil {
 			panic(err)
 		} else {
-			log.Println("Connection established!")
+			log.Printf("Connection established! %s", conn.RemoteAddr())
 			go server.ServeCodec(jsonrpc.NewServerCodec(conn))
 		}
 	}
@@ -58,11 +79,25 @@ func (s *Server) Map(args *string, reply *Map) error {
 	return nil
 }
 
-// TODO: Handle failure.
-func (s *Server) Move(args *MoveArgs, reply *bool) error {
-	// TODO: Fix
-	s.Maps[0].Players[0].SetPos(args.Points[0])
-	*reply = true
+func (s *Server) Move(args *Action, reply *ActionResponse) error {
+	m := s.Maps[0]
+	for _, a := range m.Actors() {
+		if a.Name() == args.Caller {
+			_ = m.WaitForTurn(a)
+			var p *Pos
+			_ = json.Unmarshal(args.Args[0], &p)
+			a.Move(*p)
+			*reply = ActionResponse{
+				Msg:   "Success",
+				Reply: true,
+			}
+			return nil
+		}
+	}
+	*reply = ActionResponse{
+		Msg:   "Actor not found.",
+		Reply: false,
+	}
 	return nil
 }
 
