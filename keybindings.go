@@ -7,27 +7,34 @@ import (
 
 const KeyNotBoundError string = "Key not bound"
 
-var Commands map[Command]KeyAction
+// Command is a string mapped to an Action intended to be called Vi style.
+var Commands map[Command]Action
 
-var Keybinds map[Key]KeyAction
+// Keybind is a key mapped to an Action.
+var Keybinds map[Key]Action
+
+var (
+	Esc       Key = Key{0, termbox.KeyEsc, 0}
+	Tab       Key = Key{0, termbox.KeyTab, 0}
+	Space     Key = Key{0, termbox.KeySpace, 0}
+	Backspace Key = Key{0, termbox.KeyBackspace, 0}
+	Enter     Key = Key{0, termbox.KeyEnter, 0}
+)
 
 func init() {
-	// Keys
-	ESC := Key{0, termbox.KeyEsc, 0}
+	//Actions
+	quit := Action{Name: "Quit"}
+	moveNorth := Action{Name: "Move", Caller: "Client", Args: []interface{}{North}}
+	moveNorthEast := Action{Name: "Move", Caller: "Client", Args: []interface{}{NorthEast}}
+	moveNorthWest := Action{Name: "Move", Caller: "Client", Args: []interface{}{NorthWest}}
+	moveEast := Action{Name: "Move", Caller: "Client", Args: []interface{}{East}}
+	moveSouth := Action{Name: "Move", Caller: "Client", Args: []interface{}{South}}
+	moveSouthEast := Action{Name: "Move", Caller: "Client", Args: []interface{}{SouthEast}}
+	moveWest := Action{Name: "Move", Caller: "Client", Args: []interface{}{West}}
+	moveSouthWest := Action{Name: "Move", Caller: "Client", Args: []interface{}{SouthWest}}
 
-	//KeyActions
-	quit := KeyAction{"Quit", nil}
-	moveNorth := KeyAction{"Move", []interface{}{North}}
-	moveNorthEast := KeyAction{"Move", []interface{}{NorthEast}}
-	moveNorthWest := KeyAction{"Move", []interface{}{NorthWest}}
-	moveEast := KeyAction{"Move", []interface{}{East}}
-	moveSouth := KeyAction{"Move", []interface{}{South}}
-	moveSouthEast := KeyAction{"Move", []interface{}{SouthEast}}
-	moveWest := KeyAction{"Move", []interface{}{West}}
-	moveSouthWest := KeyAction{"Move", []interface{}{SouthWest}}
-
-	Keybinds = map[Key]KeyAction{
-		ESC:            quit,
+	Keybinds = map[Key]Action{
+		Esc:            quit,
 		Key{0, 0, 'k'}: moveNorth,
 		Key{0, 0, 'u'}: moveNorthEast,
 		Key{0, 0, 'y'}: moveNorthWest,
@@ -39,19 +46,15 @@ func init() {
 	}
 }
 
-func BindCommand(cmd Command, KeyAction KeyAction) {
-	Commands[cmd] = KeyAction
-}
-func BindKey(key Key, KeyAction KeyAction) {
-	Keybinds[key] = KeyAction
+func BindCommand(cmd Command, Action Action) {
+	Commands[cmd] = Action
 }
 
-type KeyAction struct {
-	Func string
-	Args []interface{}
+func BindKey(key Key, Action Action) {
+	Keybinds[key] = Action
 }
 
-func KeyPressed(key Key) (*KeyAction, error) {
+func KeyPressed(key Key) (*Action, error) {
 	if act, ok := Keybinds[key]; ok {
 		return &act, nil
 	} else {
@@ -60,7 +63,7 @@ func KeyPressed(key Key) (*KeyAction, error) {
 
 }
 
-func Input() (*KeyAction, error) {
+func Input() (*Action, error) {
 
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {

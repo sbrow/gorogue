@@ -2,7 +2,6 @@
 package gorogue
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -18,13 +17,25 @@ import (
 // Each world gets at least one goroutine, with each active map getting its own
 // goroutine as well.
 type Server struct {
-	Port string
-	Maps []*Map
-	// Conns []*net.Conn
+	Port  string
+	Maps  map[string]*Map
+	Conns map[string]*Conn
+}
+
+type Conn struct {
+	Conn  *net.Conn
+	Squad []Player
 }
 
 func NewServer(port string, maps ...*Map) *Server {
-	s := &Server{port, maps}
+	s := &Server{
+		Port:  port,
+		Maps:  map[string]*Map{},
+		Conns: map[string]*Conn{},
+	}
+	for _, m := range maps {
+		s.Maps[m.Name] = m
+	}
 	c := make(chan os.Signal, 2)
 	signal.Notify(c)
 	go func() {
@@ -58,30 +69,47 @@ func (s *Server) handleRequests() {
 		if conn, err := l.Accept(); err != nil {
 			panic(err)
 		} else {
-			log.Printf("Connection established! %s", conn.RemoteAddr())
+			log.Printf("Connection established on %s", conn.RemoteAddr())
+			addr := fmt.Sprint(conn.RemoteAddr())
+			conn.Write([]byte(addr))
+			s.Conns[addr] = &Conn{Conn: &conn, Squad: []Player{}}
 			go server.ServeCodec(jsonrpc.NewServerCodec(conn))
 		}
 	}
 }
 
-func (s *Server) Map(args *string, reply *Map) error {
+type Pong struct {
+	Squad Actors
+	Maps  map[string]*Map
+}
+
+func (s *Server) Ping(addr *string, reply *Pong) error {
+	log.Printf("Recieved ping from \"%s\"\n", *addr)
+	pong := &Pong{}
+	// TODO: (10) Reduce Pong to only relevant maps.
+	pong.Maps = s.Maps
 	for _, m := range s.Maps {
-		if m.Name == *args {
-			*reply = *m
-			break
+		for _, p := range m.Players {
+			pong.Squad = append(pong.Squad, p)
 		}
 	}
+	*reply = *pong
 	return nil
 }
 
-func (s *Server) Move(args *Action, reply *ActionResponse) error {
-	m := s.Maps[0]
-	for _, a := range m.Actors() {
-		if a.Name() == args.Caller {
-			_ = m.WaitForTurn(a)
-			var p *Pos
-			_ = json.Unmarshal(args.Args[0], &p)
-			a.Move(*p)
+func (s *Server) Move(args *MoveAction, reply *ActionResponse) error {
+	log.Println("Recieved action", *args)
+	// TODO: (2) Temporary map Fix
+	var m *Map
+	for _, m = range s.Maps {
+		break
+	}
+	log.Println("Players", m.Players[0])
+	for _, p := range m.Players {
+		if p.Name() == args.Caller {
+			_ = m.WaitForTurn(p)
+			p.Move(args.Pos)
+
 			*reply = ActionResponse{
 				Msg:   "Success",
 				Reply: true,
@@ -96,25 +124,28 @@ func (s *Server) Move(args *Action, reply *ActionResponse) error {
 	return nil
 }
 
-// Response passed from server to client
-// when calling  Server.Spawn().
-type SpawnReply struct {
-	Map    *string
-	Actors Actors
-}
-
 // Spawn spawns new actors on the first map.
-func (s *Server) Spawn(args Actors, reply *SpawnReply) error {
-	Map := 0
+func (s *Server) Spawn(args *SpawnAction, reply *bool) error {
+	fmt.Println("Args", *args)
+	// TODO: (2) Temporary map Fix
+	var Map string
+	for Map, _ = range s.Maps {
+		break
+	}
 	m := s.Maps[Map]
-	args[0].SetPos(*NewPos(5, 5, Map))
-	for _, a := range args {
+	log.Print("m", m)
+	sq := s.Conns[args.Caller].Squad
+	for _, a := range args.Actors {
 		switch v := a.(type) {
 		case Player:
+			v.SetPos(Pos{Point{5, 5}, Map})
 			m.Players = append(m.Players, v)
 		}
 	}
-	*reply = SpawnReply{&m.Name, args}
+	s.Conns[args.Caller].Squad = sq
+	fmt.Println("Caller:", args.Caller, "Actors", args.Actors[0])
+	fmt.Printf("%+v\n", s.Conns[args.Caller])
+	*reply = true
 	go m.Tick()
 	return nil
 }
@@ -127,12 +158,12 @@ func (s *Server) Spawn(args Actors, reply *SpawnReply) error {
 //
 // In All mode, all characters are given "identical" priority. This is used for
 // realtime play.
-type InitiativeMode uint8
+type initiativeMode uint8
 
 const (
-	Single InitiativeMode = iota
-	Team
-	All
+	single initiativeMode = iota
+	team
+	all
 )
 
 // TickMode determines how Tick() is handled.
@@ -143,9 +174,9 @@ const (
 // In AP mode, characters can perform actions whenever they have priority,
 // only limited by whatever the designer wants to use instead of ticks,
 // (Usually Action Points, or similar).
-type TickMode uint8
+type tickMode uint8
 
 const (
-	ActionBased TickMode = iota
-	AP
+	actionBased tickMode = iota
+	ap
 )

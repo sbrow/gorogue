@@ -184,7 +184,7 @@ func (u *UI) Draw() error {
 	if err != nil {
 		return err
 	}
-
+	Ping()
 	// Print each view
 	for _, v := range u.Views {
 		err := v.Draw()
@@ -221,12 +221,11 @@ main:
 			panic(err)
 		}
 		if action != nil {
-			switch action.Func {
+			switch action.Name {
 			case "Quit":
 				break main
 			case "Move":
-				dir := action.Args[0].(Direction)
-				Move(std.Squad[0], dir)
+				Move(action)
 			}
 		}
 	}
@@ -294,7 +293,9 @@ func NewView(bounds Bounds, m *string, origin Point) *View {
 func (v *View) Draw() error {
 	defer termbox.Flush()
 
-	m := GetMap(*v.Map)
+	// TODO: (10) Squad map get
+	m := std.Maps[std.Squad[0].Pos().Map]
+
 	// Get tiles from the map
 	tiles := m.TileSlice(v.Bounds[0].X, v.Bounds[0].Y, v.Bounds[1].X,
 		v.Bounds[1].Y)

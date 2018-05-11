@@ -3,7 +3,7 @@
 package client
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
 	. "github.com/sbrow/gorogue"
 	"net"
@@ -18,8 +18,10 @@ var std *client
 var ui *UI
 
 type client struct {
+	Addr   string
 	client *rpc.Client
-	Squad  []Player
+	Squad  Actors
+	Maps   map[string]*Map
 }
 
 // Connect initializes a connection to a server. It must be called before all other
@@ -30,58 +32,75 @@ func Connect(host, port string) {
 		panic(err)
 	}
 	defer conn.Close()
-
+	var addr []byte = make([]byte, 11)
+	if _, err := conn.Read(addr); err != nil {
+		panic(err)
+	}
 	std = &client{
+		Addr:   string(bytes.Trim(addr, "\x00")),
 		client: jsonrpc.NewClient(conn),
-		Squad:  []Player{},
+		Squad:  []Actor{},
+		Maps:   map[string]*Map{},
 	}
-	m, p := Spawn(NewPlayer("Player", 1))
-	for _, a := range p {
-		std.Squad = append(std.Squad, a.(Player))
-	}
-	ui = Fullscreen(m).UI
+	Spawn(NewPlayer("Player", 1))
+	Ping()
+	// TODO: (10) active squad member
+	fmt.Printf("%+v\n", std)
+	ui = Fullscreen(&std.Squad[0].Pos().Map).UI
 	Run()
 }
 
-// GetMap asks the server for the map our Squad is on.
-func GetMap(name string) Map {
-	var reply *Map
-	err := std.client.Call("Server.Map", name, &reply)
+// Ping asks the server for relevant information.
+func Ping() {
+	var reply *Pong
+	err := std.client.Call("Server.Ping", std.Addr, &reply)
 	if err != nil {
 		panic(err)
 	}
-	return *reply
+	std.Maps = reply.Maps
+	std.Squad = reply.Squad
+	// std.Squad = []Player{}
+	// std.Squad = uad, reply.Squad.(Player))
 }
 
 // Move requests that the server move actor a in direction dir.
-func Move(a Actor, dir Direction) {
-	args := &Action{
-		Caller: a.Name(),
+func Move(a *Action) {
+	var ma MoveAction
+	var p Pos
+	if a.Name != "Move" {
+		return
 	}
-	p := a.Pos()
-
-	if dir&North == North {
-		p.Y--
-	} else {
-		if dir&South == South {
-			p.Y++
+	if a.Caller == "Client" {
+		caller := std.Squad[0] // TODO: (8) Implement active squad member.
+		ma.Caller = caller.Name()
+		p = *caller.Pos()
+	}
+	switch a.Args[0].(type) {
+	case Direction:
+		dir := a.Args[0].(Direction)
+		if dir&North == North {
+			p.Y--
+		} else {
+			if dir&South == South {
+				p.Y++
+			}
 		}
-	}
-	if dir&East == East {
-		p.X++
-	} else {
-		if dir&West == West {
-			p.X--
+		if dir&East == East {
+			p.X++
+		} else {
+			if dir&West == West {
+				p.X--
+			}
 		}
+	case Pos:
+		p = a.Args[0].(Pos)
+	default:
+		panic("Passed wrong args to Client.Move()")
 	}
-	data, err := json.Marshal(p)
-	if err != nil {
-		panic(err)
-	}
-	args.Args = [][]byte{data}
+	ma.Pos = p
 
 	var reply *ActionResponse
-	err = std.client.Call("Server.Move", args, &reply)
+	err := std.client.Call("Server.Move", ma, &reply)
 	if err != nil {
 		panic(err)
 	}
@@ -90,13 +109,14 @@ func Move(a Actor, dir Direction) {
 // Spawn requests that the server spawn actors.
 // The server determines where to spawn them and returns the map
 // where they spawned.
-func Spawn(a ...Actor) (Map *string, Spawned Actors) {
-	var reply *SpawnReply
-	data, _ := json.Marshal(Actors(a))
-	fmt.Println(string(data))
-	err := std.client.Call("Server.Spawn", Actors(a), &reply)
+func Spawn(a ...Actor) {
+	args := &SpawnAction{
+		Caller: std.Addr,
+		Actors: a,
+	}
+	var reply *bool
+	err := std.client.Call("Server.Spawn", args, &reply)
 	if err != nil {
 		panic(err)
 	}
-	return reply.Map, reply.Actors
 }

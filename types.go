@@ -1,14 +1,6 @@
 package gorogue
 
-type Action struct {
-	Caller string
-	Args   [][]byte
-}
-
-type ActionResponse struct {
-	Msg   string
-	Reply bool
-}
+// import "reflect"
 
 // Direction represents the cardinal and ordinal directions.
 // North points towards the top of the screen, east points to the right, etc.
@@ -41,14 +33,21 @@ func (p *Point) Ints() (x, y int) {
 // Pos represents the position of an object.
 type Pos struct {
 	Point
-	Map int
+	Map string
 }
 
-func NewPos(x, y, z int) *Pos {
-	return &Pos{Point{x, y}, z}
+func NewPos(x, y int, Map string) *Pos {
+	return &Pos{Point{x, y}, Map}
 }
 
-// Ints returns the point as an int triple.
-func (p *Pos) Ints() (x, y, z int) {
+/*func AsPos(v interface{}) *Pos {
+		ref := reflect.ValueOf(v)
+		if ref.Kind() != map[string]interface{}{} {
+			return nil
+		}
+}
+*/
+// Ints
+func (p *Pos) Ints() (x, y int, Map string) {
 	return p.X, p.Y, p.Map
 }

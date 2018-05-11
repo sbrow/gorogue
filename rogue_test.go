@@ -7,6 +7,7 @@ import (
 	"testing"
 )
 
+/*
 func JSONTester(obj interface{}, out interface{}) error {
 	fmt.Println("pre ", obj)
 
@@ -68,4 +69,39 @@ func TestObjectSprite(t *testing.T) {
 	s := p.Sprite()
 	fmt.Println(string(s.Ch))
 	fmt.Println(p.Sprite())
+}
+*/
+func TestActions(t *testing.T) {
+	pos := Pos{Point{3, 5}, 0}
+	act := Action{
+		Name:   "Move",
+		Caller: "Player",
+		Args:   []interface{}{pos},
+	}
+	data, err := json.Marshal(act)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(act)
+	fmt.Println(string(data))
+
+	var a Action
+	if err := json.Unmarshal(data, &a); err != nil {
+		t.Fatal(err)
+	}
+	switch a.Name {
+	case "Move":
+		var ma MoveAction
+		ma.Caller = a.Caller
+		tmp := a.Args[0].(map[string]interface{})
+		fmt.Println(tmp)
+		ma.Pos = Pos{Point{int(tmp["X"].(float64)), int(tmp["Y"].(float64))}, int(tmp["Map"].(float64))}
+		fmt.Println(a)
+		fmt.Println(ma)
+	}
+}
+
+func TestConvertPos(t *testing.T) {
+	ps := Pos{Point{3, 5}, 0}
+
 }
