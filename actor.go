@@ -19,7 +19,6 @@ import (
 type Actor interface {
 	Object
 	Move(pos Pos) bool
-	// Move(i []interface{}) bool
 }
 
 // Actors is a wrapper for an array of Actors. It is necessary to

@@ -26,10 +26,11 @@ type client struct {
 // functions.
 func Connect(host, port string) {
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s%s", host, port))
-	defer conn.Close()
 	if err != nil {
 		panic(err)
 	}
+	defer conn.Close()
+
 	std = &client{
 		client: jsonrpc.NewClient(conn),
 		Squad:  []Player{},
@@ -43,8 +44,6 @@ func Connect(host, port string) {
 }
 
 // GetMap asks the server for the map our Squad is on.
-//
-// TODO: Tick shenanigans.
 func GetMap(name string) Map {
 	var reply *Map
 	err := std.client.Call("Server.Map", name, &reply)
@@ -93,6 +92,8 @@ func Move(a Actor, dir Direction) {
 // where they spawned.
 func Spawn(a ...Actor) (Map *string, Spawned Actors) {
 	var reply *SpawnReply
+	data, _ := json.Marshal(Actors(a))
+	fmt.Println(string(data))
 	err := std.client.Call("Server.Spawn", Actors(a), &reply)
 	if err != nil {
 		panic(err)

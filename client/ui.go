@@ -5,7 +5,6 @@ import (
 	"fmt"
 	termbox "github.com/nsf/termbox-go"
 	. "github.com/sbrow/gorogue"
-	"github.com/sbrow/gorogue/keybinds"
 )
 
 // DrawAt draws the given cells in termbox at the given location (0x, 0y).
@@ -217,8 +216,8 @@ func Run() {
 main:
 	for {
 		ui.Draw()
-		action, err := keybinds.Input()
-		if err != nil && err.Error() != keybinds.KeyNotBoundError {
+		action, err := Input()
+		if err != nil && err.Error() != KeyNotBoundError {
 			panic(err)
 		}
 		if action != nil {

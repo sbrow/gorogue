@@ -52,10 +52,3 @@ func NewPos(x, y, z int) *Pos {
 func (p *Pos) Ints() (x, y, z int) {
 	return p.X, p.Y, p.Map
 }
-
-// Response passed from server to client
-// when calling  Server.Spawn().
-type SpawnReply struct {
-	Map    *string
-	Actors Actors
-}

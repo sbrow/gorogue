@@ -1,33 +1,32 @@
-package keybinds
+package gorogue
 
 import (
 	"errors"
 	termbox "github.com/nsf/termbox-go"
-	rogue "github.com/sbrow/gorogue"
 )
 
 const KeyNotBoundError string = "Key not bound"
 
-var Commands map[Command]Action
+var Commands map[Command]KeyAction
 
-var Keybinds map[Key]Action
+var Keybinds map[Key]KeyAction
 
 func init() {
 	// Keys
 	ESC := Key{0, termbox.KeyEsc, 0}
 
-	//Actions
-	quit := Action{"Quit", nil}
-	moveNorth := Action{"Move", []interface{}{rogue.North}}
-	moveNorthEast := Action{"Move", []interface{}{rogue.NorthEast}}
-	moveNorthWest := Action{"Move", []interface{}{rogue.NorthWest}}
-	moveEast := Action{"Move", []interface{}{rogue.East}}
-	moveSouth := Action{"Move", []interface{}{rogue.South}}
-	moveSouthEast := Action{"Move", []interface{}{rogue.SouthEast}}
-	moveWest := Action{"Move", []interface{}{rogue.West}}
-	moveSouthWest := Action{"Move", []interface{}{rogue.SouthWest}}
+	//KeyActions
+	quit := KeyAction{"Quit", nil}
+	moveNorth := KeyAction{"Move", []interface{}{North}}
+	moveNorthEast := KeyAction{"Move", []interface{}{NorthEast}}
+	moveNorthWest := KeyAction{"Move", []interface{}{NorthWest}}
+	moveEast := KeyAction{"Move", []interface{}{East}}
+	moveSouth := KeyAction{"Move", []interface{}{South}}
+	moveSouthEast := KeyAction{"Move", []interface{}{SouthEast}}
+	moveWest := KeyAction{"Move", []interface{}{West}}
+	moveSouthWest := KeyAction{"Move", []interface{}{SouthWest}}
 
-	Keybinds = map[Key]Action{
+	Keybinds = map[Key]KeyAction{
 		ESC:            quit,
 		Key{0, 0, 'k'}: moveNorth,
 		Key{0, 0, 'u'}: moveNorthEast,
@@ -40,19 +39,19 @@ func init() {
 	}
 }
 
-func BindCommand(cmd Command, action Action) {
-	Commands[cmd] = action
+func BindCommand(cmd Command, KeyAction KeyAction) {
+	Commands[cmd] = KeyAction
 }
-func BindKey(key Key, action Action) {
-	Keybinds[key] = action
+func BindKey(key Key, KeyAction KeyAction) {
+	Keybinds[key] = KeyAction
 }
 
-type Action struct {
+type KeyAction struct {
 	Func string
 	Args []interface{}
 }
 
-func KeyPressed(key Key) (*Action, error) {
+func KeyPressed(key Key) (*KeyAction, error) {
 	if act, ok := Keybinds[key]; ok {
 		return &act, nil
 	} else {
@@ -61,10 +60,9 @@ func KeyPressed(key Key) (*Action, error) {
 
 }
 
-func Input() (*Action, error) {
+func Input() (*KeyAction, error) {
 
 	for {
-		// TODO: Pass event to Keybindings
 		switch ev := termbox.PollEvent(); ev.Type {
 		case termbox.EventKey:
 			key := &Key{}

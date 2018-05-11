@@ -1,11 +1,12 @@
 package main
 
 import (
+	"flag"
 	rogue "github.com/sbrow/gorogue"
-	server "github.com/sbrow/gorogue/server"
 )
 
 func main() {
-	host, port := "localhost", ":6061"
-	_ = server.Start(host, port, rogue.NewMap(100, 100, "Map"))
+	var port = flag.String("port", ":6060", "The port to host from. Must include the colon.")
+	flag.Parse()
+	_ = rogue.NewServer(*port, rogue.NewMap(100, 100, "Map"))
 }

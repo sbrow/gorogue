@@ -29,12 +29,6 @@ func NewMap(w, h int, name string) *Map {
 	m.Name = name
 	m.actions = make(chan Actor)
 	m.results = make(chan bool)
-	go func() {
-		log.Println("Waiting for players...")
-		for len(m.Actors()) == 0 {
-		}
-		m.Tick()
-	}()
 	return m
 }
 

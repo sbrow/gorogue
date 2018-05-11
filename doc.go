@@ -18,7 +18,5 @@
 //
 // 3. An engine is only as good as its documentation.
 //
-// TODO: Action Control
-//
 // TODO: Status effects?
 package gorogue

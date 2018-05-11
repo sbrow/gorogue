@@ -1,13 +1,9 @@
-// Package server handles the bulk of game and NPC logic.
-//
 // TODO: SpawnNPC() should always trigger a new goroutine to handle that NPCs
-// logic
-package server
+package gorogue
 
 import (
 	"encoding/json"
 	"fmt"
-	. "github.com/sbrow/gorogue"
 	"log"
 	"net"
 	"net/rpc"
@@ -22,14 +18,13 @@ import (
 // Each world gets at least one goroutine, with each active map getting its own
 // goroutine as well.
 type Server struct {
-	Host string
 	Port string
 	Maps []*Map
 	// Conns []*net.Conn
 }
 
-func Start(host, port string, maps ...*Map) *Server {
-	s := &Server{host, port, maps}
+func NewServer(port string, maps ...*Map) *Server {
+	s := &Server{port, maps}
 	c := make(chan os.Signal, 2)
 	signal.Notify(c)
 	go func() {
@@ -58,7 +53,7 @@ func (s *Server) handleRequests() {
 	if err != nil {
 		panic(err)
 	}
-
+	log.Println("Waiting for players...")
 	for {
 		if conn, err := l.Accept(); err != nil {
 			panic(err)
@@ -101,6 +96,13 @@ func (s *Server) Move(args *Action, reply *ActionResponse) error {
 	return nil
 }
 
+// Response passed from server to client
+// when calling  Server.Spawn().
+type SpawnReply struct {
+	Map    *string
+	Actors Actors
+}
+
 // Spawn spawns new actors on the first map.
 func (s *Server) Spawn(args Actors, reply *SpawnReply) error {
 	Map := 0
@@ -112,7 +114,8 @@ func (s *Server) Spawn(args Actors, reply *SpawnReply) error {
 			m.Players = append(m.Players, v)
 		}
 	}
-	*reply = SpawnReply{&m.Name, args} // TODO: Fix
+	*reply = SpawnReply{&m.Name, args}
+	go m.Tick()
 	return nil
 }
 

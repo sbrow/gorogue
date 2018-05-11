@@ -1,13 +1,14 @@
 package main
 
 import (
+	"flag"
 	rogue "github.com/sbrow/gorogue"
 	"github.com/sbrow/gorogue/client"
-	server "github.com/sbrow/gorogue/server"
 )
 
 func main() {
-	host, port := "localhost", ":6061"
-	go server.Start(host, port, rogue.NewMap(100, 100, "Map"))
-	client.Connect(host, port)
-
+	var port = flag.String("port", ":6060", "The port to host from, must include the colon.")
+	flag.Parse()
+	go rogue.NewServer(port, rogue.NewMap(100, 100, "Map"))
+	client.Connect("localhost", port)
+}
