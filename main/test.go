@@ -1,90 +1,41 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
+	"sync"
 )
 
-type Foo interface {
-	Bar() string
-}
+var p []chan int
+var wg sync.WaitGroup
 
-type Bar struct {
-	bar string
-}
-
-func (b *Bar) Bar() string {
-	return b.bar
-}
-
-func (b *Bar) MarshalJSON() ([]byte, error) {
-	return json.Marshal(BarJSON{b.bar})
-}
-
-func (b *Bar) UnmarshalJSON(data []byte) error {
-	tmp := &BarJSON{}
-	if err := json.Unmarshal(data, &tmp); err != nil {
-		return err
-	}
-	b.bar = tmp.Bar
-	return nil
-}
-
-type BarJSON struct {
-	Bar string
-}
-
-type FooBar struct {
-	H    int
-	Foos map[string]Foo
+func Conn(ch chan int, priority int, value string) {
+	ch <- priority
+	<-ch
+	fmt.Println(value)
+	ch <- 0
 }
 
 func main() {
-	b := &Bar{"butts"}
-	var f Foo
-	if err := JSONTester(b, f); err != nil {
-		panic(err)
+	p = make([]chan int, 5)
+	wg.Add(1)
+	conns := 5
+	for i := 1; i <= conns; i++ {
+		c := make(chan int)
+		go Conn(c, i, "A"+fmt.Sprint(i))
+		p[i-1] = c
 	}
-
-	fooMap := map[string]Foo{
-		"Booty": b,
-	}
-	var f2 map[string]Foo
-	if err := JSONTester(fooMap, f2); err != nil {
-		panic(err)
-	}
-
-	fooBar := FooBar{3, fooMap}
-	var f3 FooBar
-	if err := JSONTester(fooBar, f3); err != nil {
-		panic(err)
-	}
-
-	fooBarMap := map[string]FooBar{
-		"Fooer": fooBar,
-	}
-	var f4 map[string]FooBar
-	if err := JSONTester(fooBarMap, f4); err != nil {
-		panic(err)
-	}
-
+	go srv()
+	wg.Wait()
 }
 
-func JSONTester(obj interface{}, out interface{}) error {
-	fmt.Println("pre ", obj)
-
-	byt, err := json.Marshal(obj)
-	if err != nil {
-		return err
+func srv() {
+	defer wg.Done()
+	pp := make([]chan int, 5)
+	for _, ch := range p {
+		pp[5-<-ch] = ch
 	}
-	fmt.Println("byte", string(byt))
-
-	n := out
-	err = json.Unmarshal(byt, &n)
-	if err != nil {
-		return err
+	for _, ch := range pp {
+		ch <- 1
+		<-ch
 	}
-	fmt.Println("post", string(byt))
-	fmt.Println()
-	return nil
 }
