@@ -17,8 +17,4 @@
 // Squad/Party based.
 //
 // 3. An engine is only as good as its documentation.
-//
-// TODO: Status effects?
-//
-// TODO: Vim commandbar.
 package gorogue

@@ -12,6 +12,12 @@ import (
 	"syscall"
 )
 
+// Conn is the server-side representation of a connection to a client.
+type Conn struct {
+	Conn  *net.Conn // Connection data.
+	Squad Actors    // Actors this connection has control over.
+}
+
 // Game logic is handled on the server.
 //
 // Each world gets at least one goroutine, with each active map getting its own
@@ -20,11 +26,6 @@ type Server struct {
 	Port  string
 	Maps  map[string]*Map
 	Conns map[string]*Conn
-}
-
-type Conn struct {
-	Conn  *net.Conn
-	Squad Actors
 }
 
 func NewServer(port string, maps ...*Map) *Server {
@@ -108,16 +109,15 @@ func (s *Server) Move(args *MoveAction, reply *ActionResponse) error {
 			p.Move(args.Pos)
 
 			*reply = ActionResponse{
-				Msg:   "Success",
 				Reply: true,
 			}
 			return nil
 		}
 	}
 	*reply = ActionResponse{
-		Msg:   "Actor not found.",
 		Reply: false,
 	}
+	*reply.Msg = "Actor not found."
 	return nil
 }
 

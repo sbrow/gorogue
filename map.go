@@ -5,23 +5,20 @@ import (
 	"log"
 )
 
-// Map 2 dimensional plane containing tiles, objects and Actors. Each map with active
-// connections will continue to Tick.
-//
-// TODO: Implement Map chunking, allow sections of larger maps to be evaluated independently,
-// Evaluating their Tick before others, but pausing before beginning the next Tick.
+// Map is a 2 dimensional plane containing tiles, objects and Actors. Each map will continue
+// to Tick, so long as it has at least one active connection.
 type Map struct {
-	Name    string
-	Height  int
-	Width   int
-	NPCs    Actors
-	Players map[string]Player
-	ticks   int
+	Name    string            // The key that identifies this map in the server.
+	Height  int               // The number of vertical tiles.
+	Width   int               // The number of horizontal tiles.
+	NPCs    []NPC             // Non-player characters.
+	Players map[string]Player // Player characters
+	ticks   int               // The number of times this map has called Tick()
 	actions chan Actor
 	results chan bool
 }
 
-// NewMap creates a new, empty map of given dimensions
+// NewMap creates a new, empty map with given dimensions and names.
 func NewMap(w, h int, name string) *Map {
 	m := &Map{}
 	m.Width = w
@@ -44,8 +41,26 @@ func (m *Map) Actors() Actors {
 	return Actors(a)
 }
 
+// Tick moves time forward one tick after it has received a valid Action from each
+// Actor on the Map. Tick blocks all NPCs and connections.
+//
+// Currently, Actions are evaluated in FIFO order, meaning that Players' actions
+//  will almost always be evaluated last.
+func (m *Map) Tick() {
+	queue := make(Actors, len(m.Actors()))
+	for i := 0; i < len(queue); i++ {
+		queue[i] = <-m.actions
+	}
+	for _ = range queue {
+		m.results <- true
+	}
+	m.ticks++
+	log.Printf("Tick. (%d)\n", m.ticks)
+	m.Tick()
+}
+
 // TileSlice returns the contents of all tiles within the bounds of
-// (x1, y1) X (x2, y2).
+// [(x1, y1), (x2, y2)]
 func (m *Map) TileSlice(x1, y1, x2, y2 int) [][]termbox.Cell {
 	ret := [][]termbox.Cell{}
 	var i int
@@ -78,28 +93,7 @@ func (m *Map) Tiles() [][]termbox.Cell {
 	return m.TileSlice(0, 0, w, h)
 }
 
-// 1. Sender sends action to server
-// 2. Server determines whether action is valid.
-// 3. If it isn't, server returns failed action, then GOTO 1.
-// 4. If it is, server adds action to queue. (BLOCKING)
-
-// Tick collects actions from all actors on the map, and inserts them into an
-// array at a random index. When tick has received an action from all Actors,
-// it executes the actions in the array (in order), and then increments m.ticks and
-// restarts.
-func (m *Map) Tick() {
-	queue := make(Actors, len(m.Actors()))
-	for i := 0; i < len(queue); i++ {
-		queue[i] = <-m.actions
-	}
-	for _ = range queue {
-		m.results <- true
-	}
-	m.ticks++
-	log.Printf("Tick. (%d)\n", m.ticks)
-	m.Tick()
-}
-
+// WaitForTurn blocks an actor until Tick gives them priority.
 func (m *Map) WaitForTurn(a Actor) bool {
 	m.actions <- a
 	return <-m.results

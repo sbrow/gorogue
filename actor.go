@@ -2,24 +2,22 @@ package gorogue
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/sbrow/gorogue/sprites"
 )
 
 // Actor is an object that can act freely. There are two main kinds of actors:
 // player characters and non-player characters (NPCs). The important
-// distinction being that NPCs are handled server-side, and Player
-// characters are handled client-side.
+// distinction being that NPCs are controlled by the server, and Player
+// characters are controlled by clients.
 //
 // Each NPC gets their own goroutine, meaning each acts on their own thread,
 // separate from other actors. The server receives requests to act from each NPC,
 // and determines whether that action is valid. If if isn't, the action is rejected
 // and the Actor must choose a different action to perform. If the action is valid,
 // it gets stored in memory and is called during the next Map tick. (See Map.Tick)
-//
 type Actor interface {
-	Object
-	Move(pos Pos) bool
+	Object             // The Object interface.
+	Move(pos Pos) bool // Moves the Actor to the given position.
 }
 
 // Actors is a wrapper for an array of Actors. It is necessary to

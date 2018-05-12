@@ -7,10 +7,10 @@ import (
 
 const KeyNotBoundError string = "Key not bound"
 
-// Command is a string mapped to an Action intended to be called Vi style.
+// Commands stores all currently bound commands
 var Commands map[Command]Action
 
-// Keybind is a key mapped to an Action.
+// Keybinds stores all currently bound keys.
 var Keybinds map[Key]Action
 
 var (
@@ -46,23 +46,19 @@ func init() {
 	}
 }
 
+// BindCommand maps a Command to an action, overwriting any action the
+// Command was previously mapped to
 func BindCommand(cmd Command, Action Action) {
 	Commands[cmd] = Action
 }
 
+// BindKey maps a key to an action, overwriting any action the
+// Key was previously mapped to
 func BindKey(key Key, Action Action) {
 	Keybinds[key] = Action
 }
 
-func KeyPressed(key Key) (*Action, error) {
-	if act, ok := Keybinds[key]; ok {
-		return &act, nil
-	} else {
-		return nil, errors.New(KeyNotBoundError)
-	}
-
-}
-
+// Input polls the user for a Key, and returns the Action it's mapped to (if any).
 func Input() (*Action, error) {
 
 	for {
@@ -81,10 +77,25 @@ func Input() (*Action, error) {
 	return nil, errors.New("Something  went wrong.")
 }
 
+func KeyPressed(key Key) (*Action, error) {
+	if act, ok := Keybinds[key]; ok {
+		return &act, nil
+	} else {
+		return nil, errors.New(KeyNotBoundError)
+	}
+
+}
+
+// Command is a string mapped to an Action. Commands are  intended to be called
+// in a Vi style command bar.
+//
+// TODO: (7) Implement Vi command bar.
 type Command string
 
+// Keyd is a keyboard key mapped to an Action. See package github.com/nsf/termbox-go
+// for more information.
 type Key struct {
-	Mod termbox.Modifier
-	Key termbox.Key
-	Ch  rune
+	Mod termbox.Modifier // One of termbox.Mod* constants or 0.
+	Key termbox.Key      // One of termbox.Key* constants, invalid if 'Ch' is not 0.
+	Ch  rune             // a unicode character.
 }

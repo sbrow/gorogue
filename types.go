@@ -5,7 +5,8 @@ package gorogue
 // Direction represents the cardinal and ordinal directions.
 // North points towards the top of the screen, east points to the right, etc.
 //
-// Bitwise operations are performed on Directions.
+// Converting between coordinates and Directions is often done with Bitwise operations,
+// hence why they are not laid out in perfect sequence.r
 type Direction uint8
 
 const (

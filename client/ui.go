@@ -122,7 +122,9 @@ func (b *Border) Type() UIElementType {
 // Top Left, Top Right, Bottom Left, Bottom Right, Horizontal, Vertical
 //
 // TODO: Add remaining borders.
-type BorderSet string
+type BorderSet Tileset
+
+type TileSet string
 
 const (
 	LightBorder BorderSet = "┌┐└┘─│"
