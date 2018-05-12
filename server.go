@@ -24,7 +24,7 @@ type Server struct {
 
 type Conn struct {
 	Conn  *net.Conn
-	Squad []Player
+	Squad Actors
 }
 
 func NewServer(port string, maps ...*Map) *Server {
@@ -72,7 +72,7 @@ func (s *Server) handleRequests() {
 			log.Printf("Connection established on %s", conn.RemoteAddr())
 			addr := fmt.Sprint(conn.RemoteAddr())
 			conn.Write([]byte(addr))
-			s.Conns[addr] = &Conn{Conn: &conn, Squad: []Player{}}
+			s.Conns[addr] = &Conn{Conn: &conn, Squad: []Actor{}}
 			go server.ServeCodec(jsonrpc.NewServerCodec(conn))
 		}
 	}
@@ -84,15 +84,13 @@ type Pong struct {
 }
 
 func (s *Server) Ping(addr *string, reply *Pong) error {
-	log.Printf("Recieved ping from \"%s\"\n", *addr)
 	pong := &Pong{}
 	// TODO: (10) Reduce Pong to only relevant maps.
 	pong.Maps = s.Maps
-	for _, m := range s.Maps {
-		for _, p := range m.Players {
-			pong.Squad = append(pong.Squad, p)
-		}
+	for _, p := range s.Conns[*addr].Squad {
+		pong.Squad = append(pong.Squad, p)
 	}
+
 	*reply = *pong
 	return nil
 }
@@ -104,7 +102,6 @@ func (s *Server) Move(args *MoveAction, reply *ActionResponse) error {
 	for _, m = range s.Maps {
 		break
 	}
-	log.Println("Players", m.Players[0])
 	for _, p := range m.Players {
 		if p.Name() == args.Caller {
 			_ = m.WaitForTurn(p)
@@ -133,13 +130,18 @@ func (s *Server) Spawn(args *SpawnAction, reply *bool) error {
 		break
 	}
 	m := s.Maps[Map]
-	log.Print("m", m)
 	sq := s.Conns[args.Caller].Squad
 	for _, a := range args.Actors {
 		switch v := a.(type) {
 		case Player:
 			v.SetPos(Pos{Point{5, 5}, Map})
-			m.Players = append(m.Players, v)
+			_, present := m.Players[v.ID()]
+			for present {
+				v.SetIndex(v.Index() + 1)
+				_, present = m.Players[v.ID()]
+			}
+			m.Players[a.ID()] = v
+			sq = append(sq, m.Players[v.ID()].(Player))
 		}
 	}
 	s.Conns[args.Caller].Squad = sq

@@ -2,6 +2,7 @@ package gorogue
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/sbrow/gorogue/sprites"
 )
 
@@ -84,14 +85,14 @@ type player struct {
 // NewPlayer creates a new player using the standard '@' character sprite.
 func NewPlayer(name string, hp int) Player {
 	return &player{
-		object: *newObject(name, nil, sprites.Default),
+		object: *newObject(name, 1, nil, sprites.Default),
 		hp:     hp,
 	}
 }
 
 func (p *player) JSON() PlayerJSON {
 	return PlayerJSON{
-		Type:       "Player",
+		Type:       "player",
 		ObjectJSON: p.object.JSON(),
 		HP:         p.hp,
 	}
@@ -127,7 +128,6 @@ func (p *player) UnmarshalJSON(data []byte) error {
 	}
 	p.hp = tmp.HP
 	return nil
-
 }
 
 // PlayerJSON allows Player objects to be converted into JSON

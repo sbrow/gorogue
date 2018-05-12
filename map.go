@@ -15,7 +15,7 @@ type Map struct {
 	Height  int
 	Width   int
 	NPCs    Actors
-	Players Actors // TODO: Temporary Solution
+	Players map[string]Player
 	ticks   int
 	actions chan Actor
 	results chan bool
@@ -27,6 +27,7 @@ func NewMap(w, h int, name string) *Map {
 	m.Width = w
 	m.Height = h
 	m.Name = name
+	m.Players = make(map[string]Player, 0)
 	m.actions = make(chan Actor)
 	m.results = make(chan bool)
 	return m
@@ -88,15 +89,12 @@ func (m *Map) Tiles() [][]termbox.Cell {
 // restarts.
 func (m *Map) Tick() {
 	queue := make(Actors, len(m.Actors()))
-	// log.Println("Collecting Actions for next Tick...")
 	for i := 0; i < len(queue); i++ {
 		queue[i] = <-m.actions
 	}
-	// log.Println("Actions collected, sending responses...")
 	for _ = range queue {
 		m.results <- true
 	}
-	// log.Println("Reponses sent.")
 	m.ticks++
 	log.Printf("Tick. (%d)\n", m.ticks)
 	m.Tick()

@@ -7,7 +7,6 @@ import (
 	"testing"
 )
 
-/*
 func JSONTester(obj interface{}, out interface{}) error {
 	fmt.Println("pre ", obj)
 
@@ -22,10 +21,11 @@ func JSONTester(obj interface{}, out interface{}) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("post", string(byt))
-	fmt.Println()
+	fmt.Println("post", out)
 	return nil
 }
+
+/*
 func TestPlayerJSON(t *testing.T) {
 	err := JSONTester(NewPlayer("PlayerOne", 1), &Player{})
 	if err != nil {
@@ -70,9 +70,9 @@ func TestObjectSprite(t *testing.T) {
 	fmt.Println(string(s.Ch))
 	fmt.Println(p.Sprite())
 }
-*/
+
 func TestActions(t *testing.T) {
-	pos := Pos{Point{3, 5}, 0}
+	pos := Pos{Point{3, 5}, "Map"}
 	act := Action{
 		Name:   "Move",
 		Caller: "Player",
@@ -100,8 +100,55 @@ func TestActions(t *testing.T) {
 		fmt.Println(ma)
 	}
 }
+*/
 
-func TestConvertPos(t *testing.T) {
-	ps := Pos{Point{3, 5}, 0}
+func TestMoreJSON(t *testing.T) {
+	n := NewPlayer("Player", 1)
+	/*	m := map[string]*player{
+			"Player_1": n.(*player),
+		}
+	*/m := map[string]Player{
+		"Player_1": n.(*player),
+	}
+	data, err := json.Marshal(m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var tmp map[string]interface{}
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(tmp)
+	fmt.Println(Mapper(tmp)["Player_1"])
+}
 
+func Mapper(v map[string]interface{}) map[string]Player {
+	out := map[string]Player{}
+	for j := range v {
+		p := v[j].(map[string]interface{})
+		tmp := &player{}
+		for k, val := range p {
+			if val != nil {
+				switch k {
+				case "Name":
+					tmp.name = val.(string)
+				case "Index":
+					tmp.index = int(val.(float64))
+				case "Pos":
+					tmp.pos = AsPos(val.(map[string]interface{}))
+				case "HP":
+					tmp.hp = int(val.(float64))
+				}
+			}
+		}
+		out[j] = tmp
+	}
+	return out
+}
+
+func AsPos(v map[string]interface{}) *Pos {
+	for k, v := range v {
+		fmt.Println("thing", k, v)
+	}
+	return nil
 }

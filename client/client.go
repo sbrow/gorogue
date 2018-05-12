@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/rpc"
 	"net/rpc/jsonrpc"
+	"os"
 )
 
 // std is the active client. Each process can have only one active client.
@@ -24,6 +25,18 @@ type client struct {
 	Maps   map[string]*Map
 }
 
+func Check(e error) {
+	switch e {
+	case rpc.ErrShutdown:
+		fmt.Println("The server shut down unexpectedly.")
+		os.Exit(1)
+	case nil:
+		return
+	default:
+		panic(e)
+	}
+}
+
 // Connect initializes a connection to a server. It must be called before all other
 // functions.
 func Connect(host, port string) {
@@ -32,7 +45,7 @@ func Connect(host, port string) {
 		panic(err)
 	}
 	defer conn.Close()
-	var addr []byte = make([]byte, 11)
+	var addr []byte = make([]byte, 24)
 	if _, err := conn.Read(addr); err != nil {
 		panic(err)
 	}
@@ -54,13 +67,10 @@ func Connect(host, port string) {
 func Ping() {
 	var reply *Pong
 	err := std.client.Call("Server.Ping", std.Addr, &reply)
-	if err != nil {
-		panic(err)
-	}
+	fmt.Printf("%+v\n", reply.Maps["Map"])
+	Check(err)
 	std.Maps = reply.Maps
 	std.Squad = reply.Squad
-	// std.Squad = []Player{}
-	// std.Squad = uad, reply.Squad.(Player))
 }
 
 // Move requests that the server move actor a in direction dir.
@@ -101,9 +111,7 @@ func Move(a *Action) {
 
 	var reply *ActionResponse
 	err := std.client.Call("Server.Move", ma, &reply)
-	if err != nil {
-		panic(err)
-	}
+	Check(err)
 }
 
 // Spawn requests that the server spawn actors.
@@ -116,7 +124,5 @@ func Spawn(a ...Actor) {
 	}
 	var reply *bool
 	err := std.client.Call("Server.Spawn", args, &reply)
-	if err != nil {
-		panic(err)
-	}
+	Check(err)
 }
