@@ -59,22 +59,10 @@ func (o *object) Name() string {
 	return o.name
 }
 
-func (o *object) Pos() *Pos {
-	return o.pos
-}
-
 func (o *object) SetIndex(i int) {
 	if i > 0 {
 		o.index = i
 	}
-}
-
-func (o *object) SetPos(p Pos) {
-	o.pos = &p
-}
-
-func (o *object) Sprite() termbox.Cell {
-	return o.sprite
 }
 
 func (o *object) UnmarshalJSON(data []byte) error {

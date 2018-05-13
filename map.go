@@ -8,12 +8,12 @@ import (
 // Map is a 2 dimensional plane containing tiles, objects and Actors. Each map will continue
 // to Tick, so long as it has at least one active connection.
 type Map struct {
-	Name    string            // The key that identifies this map in the server.
-	Height  int               // The number of vertical tiles.
-	Width   int               // The number of horizontal tiles.
-	NPCs    []NPC             // Non-player characters.
-	Players map[string]Player // Player characters
-	ticks   int               // The number of times this map has called Tick()
+	Name   string // The key that identifies this map in the server.
+	Height int    // The number of vertical tiles.
+	Width  int    // The number of horizontal tiles.
+	// NPCs    []NPC             // Non-player characters.
+	Players Actors //
+	ticks   int    // The number of times this map has called Tick()
 	actions chan Actor
 	results chan bool
 }
@@ -24,21 +24,21 @@ func NewMap(w, h int, name string) *Map {
 	m.Width = w
 	m.Height = h
 	m.Name = name
-	m.Players = make(map[string]Player, 0)
+	m.Players = []Actor{}
 	m.actions = make(chan Actor)
 	m.results = make(chan bool)
 	return m
 }
 
-func (m *Map) Actors() Actors {
+func (m *Map) Actors() []Actor {
 	a := []Actor{}
-	for _, n := range m.NPCs {
-		a = append(a, Actor(n))
-	}
+	// for _, n := range m.NPCs {
+	// a = append(a, Actor(n))
+	// }
 	for _, p := range m.Players {
-		a = append(a, Actor(p))
+		a = append(a, p)
 	}
-	return Actors(a)
+	return a
 }
 
 // Tick moves time forward one tick after it has received a valid Action from each
@@ -47,7 +47,7 @@ func (m *Map) Actors() Actors {
 // Currently, Actions are evaluated in FIFO order, meaning that Players' actions
 //  will almost always be evaluated last.
 func (m *Map) Tick() {
-	queue := make(Actors, len(m.Actors()))
+	queue := make([]Actor, len(m.Actors()))
 	for i := 0; i < len(queue); i++ {
 		queue[i] = <-m.actions
 	}

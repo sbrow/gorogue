@@ -2,8 +2,11 @@ package gorogue
 
 import (
 	"encoding/json"
-	"github.com/sbrow/gorogue/sprites"
+	"fmt"
+	termbox "github.com/nsf/termbox-go"
 )
+
+var PlayerSprite termbox.Cell = termbox.Cell{'@', termbox.ColorWhite, termbox.ColorDefault}
 
 // Actor is an object that can act freely. There are two main kinds of actors:
 // player characters and non-player characters (NPCs). The important
@@ -15,6 +18,7 @@ import (
 // and determines whether that action is valid. If if isn't, the action is rejected
 // and the Actor must choose a different action to perform. If the action is valid,
 // it gets stored in memory and is called during the next Map tick. (See Map.Tick)
+
 type Actor interface {
 	Object             // The Object interface.
 	Move(pos Pos) bool // Moves the Actor to the given position.
@@ -23,6 +27,11 @@ type Actor interface {
 // Actors is a wrapper for an array of Actors. It is necessary to
 // Unmarshal objects that implement Actor.
 type Actors []Actor
+
+type NPC struct {
+	object
+	hp int
+}
 
 // Takes JSON data and reads it into this array.
 func (a *Actors) UnmarshalJSON(data []byte) error {
@@ -50,7 +59,7 @@ func (a *Actors) UnmarshalJSON(data []byte) error {
 		var actual Actor
 		switch Type {
 		case "Player":
-			actual = &player{}
+			actual = &Player{}
 		}
 
 		err = json.Unmarshal(r, actual)
@@ -63,75 +72,92 @@ func (a *Actors) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-type NPC struct {
-	object
-	hp int
+type Player struct {
+	name   string
+	index  int
+	pos    *Pos
+	sprite termbox.Cell
 }
 
-// Player is any playable character. Players are controlled by clients.
-// Each client can control more than one Player.
-type Player interface {
-	Actor
-	HP() int
-}
-
-type player struct {
-	object
-	hp int
-}
-
-// NewPlayer creates a new player using the standard '@' character sprite.
-func NewPlayer(name string, hp int) Player {
-	return &player{
-		object: *newObject(name, 1, nil, sprites.Default),
-		hp:     hp,
+// NewPlayer creates a new Player using the standard '@' character sprite.
+func NewPlayer(name string) *Player {
+	return &Player{
+		name:   name,
+		index:  1,
+		pos:    nil,
+		sprite: PlayerSprite,
 	}
 }
 
-func (p *player) JSON() PlayerJSON {
+func (p *Player) ID() string {
+	return fmt.Sprintf("%s_%d", p.name, p.index)
+}
+
+func (p *Player) Index() int {
+	return p.index
+}
+
+func (p *Player) JSON() PlayerJSON {
 	return PlayerJSON{
-		Type:       "player",
-		ObjectJSON: p.object.JSON(),
-		HP:         p.hp,
+		Name:   p.name,
+		Index:  p.index,
+		Pos:    p.pos,
+		Sprite: p.sprite,
+		Type:   "Player",
 	}
-}
-
-func (p *player) HP() int {
-	return p.hp
 }
 
 // MarshalJSON converts the Player into JSON bytes.
-func (p *player) MarshalJSON() ([]byte, error) {
+func (p *Player) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.JSON())
 }
 
-func (p *player) Move(pos Pos) bool {
+func (p *Player) Move(pos Pos) bool {
 	p.SetPos(pos)
 	return true
 }
 
+func (p *Player) Name() string {
+	return p.name
+}
+
+func (p *Player) Pos() *Pos {
+	return p.pos
+}
+
+func (p *Player) SetIndex(i int) {
+	if i > 0 {
+		p.index = i
+	}
+}
+
+func (p *Player) SetPos(pos Pos) {
+	p.pos = &pos
+}
+
+func (p *Player) Sprite() termbox.Cell {
+	return p.sprite
+}
+
 // UnmarshalJSON reads JSON data into this Player.
-func (p *player) UnmarshalJSON(data []byte) error {
+func (p *Player) UnmarshalJSON(data []byte) error {
 	tmp := &PlayerJSON{}
 	if err := json.Unmarshal(data, &tmp); err != nil {
 		return err
 	}
-	byt, err := json.Marshal(tmp.ObjectJSON)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(byt, &p.object)
-	if err != nil {
-		return err
-	}
-	p.hp = tmp.HP
+	p.name = tmp.Name
+	p.index = tmp.Index
+	p.pos = tmp.Pos
+	p.sprite = tmp.Sprite
 	return nil
 }
 
 // PlayerJSON allows Player objects to be converted into JSON
 // and transported via JSON RPC.
 type PlayerJSON struct {
-	ObjectJSON
-	Type string
-	HP   int
+	Name   string
+	Index  int
+	Pos    *Pos
+	Sprite termbox.Cell
+	Type   string
 }

@@ -120,15 +120,17 @@ func (b *Border) Type() UIElementType {
 // BorderSets must be laid out in the following order:
 //
 // Top Left, Top Right, Bottom Left, Bottom Right, Horizontal, Vertical
+// VerticalRight, VerticalLeft, LeftUp, Center,DownHorizontal
 //
 // TODO: Add remaining borders.
-type BorderSet Tileset
+type BorderSet TileSet
 
 type TileSet string
 
 const (
-	LightBorder BorderSet = "┌┐└┘─│"
-	HeavyBorder           = "┏┓┗┛━┃"
+	LightBorder  BorderSet = "┌┐└┘─│┤├┴┼┬"
+	HeavyBorder            = "┏┓┗┛━┃┫┣┻╋┳"
+	DoubleBorder           = "╔╗╚╝═║╣╠╩╬╦"
 )
 
 // Bounds hold the top left-most and bottom right-most points of a UIElement

@@ -2,6 +2,6 @@ package gorogue
 
 import termbox "github.com/nsf/termbox-go"
 
-type Tile {
+type Tile struct {
 	Sprite termbox.Cell
 }

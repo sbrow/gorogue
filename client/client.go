@@ -55,7 +55,7 @@ func Connect(host, port string) {
 		Squad:  []Actor{},
 		Maps:   map[string]*Map{},
 	}
-	Spawn(NewPlayer("Player", 1))
+	Spawn(NewPlayer("Player"))
 	Ping()
 	// TODO: (10) active squad member
 	fmt.Printf("%+v\n", std)
@@ -63,7 +63,7 @@ func Connect(host, port string) {
 	Run()
 }
 
-// Ping asks the server for relevant information.
+// Ping asks the server for all information relevant to the client.
 func Ping() {
 	var reply *Pong
 	err := std.client.Call("Server.Ping", std.Addr, &reply)
@@ -123,6 +123,13 @@ func Spawn(a ...Actor) {
 		Actors: a,
 	}
 	var reply *bool
+	fmt.Println("Client args", args)
+	fmt.Println("Client args.Actors", args.Actors[0])
+
+	// Unsafe
+	// _ = std.client.Call("Server.Spawn", args, &reply)
+
+	// Safe
 	err := std.client.Call("Server.Spawn", args, &reply)
 	Check(err)
 }

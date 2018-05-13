@@ -17,4 +17,9 @@
 // Squad/Party based.
 //
 // 3. An engine is only as good as its documentation.
+//
+// 4. Implement as little as possible in the base package.
+//
+// Use the base package as a skeleton for any game to work from. Implement things
+// in subpackages so they can just as easily be extended as removed.
 package gorogue

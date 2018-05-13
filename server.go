@@ -15,7 +15,7 @@ import (
 // Conn is the server-side representation of a connection to a client.
 type Conn struct {
 	Conn  *net.Conn // Connection data.
-	Squad Actors    // Actors this connection has control over.
+	Squad []Actor   // Actors this connection has control over.
 }
 
 // Game logic is handled on the server.
@@ -85,13 +85,13 @@ type Pong struct {
 }
 
 func (s *Server) Ping(addr *string, reply *Pong) error {
+	log.Println("Pong!")
 	pong := &Pong{}
 	// TODO: (10) Reduce Pong to only relevant maps.
 	pong.Maps = s.Maps
 	for _, p := range s.Conns[*addr].Squad {
 		pong.Squad = append(pong.Squad, p)
 	}
-
 	*reply = *pong
 	return nil
 }
@@ -107,7 +107,6 @@ func (s *Server) Move(args *MoveAction, reply *ActionResponse) error {
 		if p.Name() == args.Caller {
 			_ = m.WaitForTurn(p)
 			p.Move(args.Pos)
-
 			*reply = ActionResponse{
 				Reply: true,
 			}
@@ -123,7 +122,7 @@ func (s *Server) Move(args *MoveAction, reply *ActionResponse) error {
 
 // Spawn spawns new actors on the first map.
 func (s *Server) Spawn(args *SpawnAction, reply *bool) error {
-	fmt.Println("Args", *args)
+	log.Println("Args", *args)
 	// TODO: (2) Temporary map Fix
 	var Map string
 	for Map, _ = range s.Maps {
@@ -133,19 +132,23 @@ func (s *Server) Spawn(args *SpawnAction, reply *bool) error {
 	sq := s.Conns[args.Caller].Squad
 	for _, a := range args.Actors {
 		switch v := a.(type) {
-		case Player:
+		case *Player:
 			v.SetPos(Pos{Point{5, 5}, Map})
-			_, present := m.Players[v.ID()]
-			for present {
-				v.SetIndex(v.Index() + 1)
-				_, present = m.Players[v.ID()]
-			}
-			m.Players[a.ID()] = v
-			sq = append(sq, m.Players[v.ID()].(Player))
+			m.Players = append(m.Players, v)
+			sq = append(sq, v)
+			/*
+				_, present := m.Players[v.ID()]
+				for present {
+					v.SetIndex(v.Index() + 1)
+					_, present = m.Players[v.ID()]
+				}
+				m.Players[a.ID()] = v
+				sq = append(sq, m.Players[v.ID()].(Player))
+			*/
 		}
 	}
 	s.Conns[args.Caller].Squad = sq
-	fmt.Println("Caller:", args.Caller, "Actors", args.Actors[0])
+	fmt.Println("Caller:", args.Caller, "Actor", args.Actors)
 	fmt.Printf("%+v\n", s.Conns[args.Caller])
 	*reply = true
 	go m.Tick()
