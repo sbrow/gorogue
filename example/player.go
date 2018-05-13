@@ -1,37 +1,16 @@
-package gorogue
+package example
 
 import (
 	"encoding/json"
 	"fmt"
 	termbox "github.com/nsf/termbox-go"
+	engine "github.com/sbrow/gorogue"
+	. "github.com/sbrow/gorogue/lib"
 )
-
-var PlayerSprite termbox.Cell = termbox.Cell{'@', termbox.ColorWhite, termbox.ColorDefault}
-
-// Actor is an object that can act freely. There are two main kinds of actors:
-// player characters and non-player characters (NPCs). The important
-// distinction being that NPCs are controlled by the server, and Player
-// characters are controlled by clients.
-//
-// Each NPC gets their own goroutine, meaning each acts on their own thread,
-// separate from other actors. The server receives requests to act from each NPC,
-// and determines whether that action is valid. If if isn't, the action is rejected
-// and the Actor must choose a different action to perform. If the action is valid,
-// it gets stored in memory and is called during the next Map tick. (See Map.Tick)
-
-type Actor interface {
-	Object             // The Object interface.
-	Move(pos Pos) bool // Moves the Actor to the given position.
-}
 
 // Actors is a wrapper for an array of Actors. It is necessary to
 // Unmarshal objects that implement Actor.
-type Actors []Actor
-
-type NPC struct {
-	object
-	hp int
-}
+type Actors []engine.Actor
 
 // Takes JSON data and reads it into this array.
 func (a *Actors) UnmarshalJSON(data []byte) error {
@@ -56,7 +35,7 @@ func (a *Actors) UnmarshalJSON(data []byte) error {
 		}
 
 		// unmarshal again into the correct type
-		var actual Actor
+		var actual engine.Actor
 		switch Type {
 		case "Player":
 			actual = &Player{}
@@ -72,10 +51,14 @@ func (a *Actors) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+func (a *Actors) Arr() []engine.Actor {
+	return *a
+}
+
 type Player struct {
 	name   string
 	index  int
-	pos    *Pos
+	pos    *engine.Pos
 	sprite termbox.Cell
 }
 
@@ -85,7 +68,7 @@ func NewPlayer(name string) *Player {
 		name:   name,
 		index:  1,
 		pos:    nil,
-		sprite: PlayerSprite,
+		sprite: DefaultPlayer,
 	}
 }
 
@@ -112,7 +95,7 @@ func (p *Player) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.JSON())
 }
 
-func (p *Player) Move(pos Pos) bool {
+func (p *Player) Move(pos engine.Pos) bool {
 	p.SetPos(pos)
 	return true
 }
@@ -121,7 +104,7 @@ func (p *Player) Name() string {
 	return p.name
 }
 
-func (p *Player) Pos() *Pos {
+func (p *Player) Pos() *engine.Pos {
 	return p.pos
 }
 
@@ -131,7 +114,7 @@ func (p *Player) SetIndex(i int) {
 	}
 }
 
-func (p *Player) SetPos(pos Pos) {
+func (p *Player) SetPos(pos engine.Pos) {
 	p.pos = &pos
 }
 
@@ -157,7 +140,7 @@ func (p *Player) UnmarshalJSON(data []byte) error {
 type PlayerJSON struct {
 	Name   string
 	Index  int
-	Pos    *Pos
+	Pos    *engine.Pos
 	Sprite termbox.Cell
 	Type   string
 }

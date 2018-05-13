@@ -1,10 +1,29 @@
-package client
+package gorogue
 
 import (
 	"errors"
 	"fmt"
 	termbox "github.com/nsf/termbox-go"
-	. "github.com/sbrow/gorogue"
+	. "github.com/sbrow/gorogue/lib"
+)
+
+var stdConn Client
+
+var stdUI *UI
+
+// BorderSet is a set of characters that can be used to border a UI element.
+// BorderSets must be laid out in the following order:
+//
+// Top Left, Top Right, Bottom Left, Bottom Right, Horizontal, Vertical
+// VerticalRight, VerticalLeft, LeftUp, Center,DownHorizontal
+//
+// TODO: Add remaining borders.
+type BorderSet TileSet
+
+const (
+	LightBorder  BorderSet = "─│┌┬┐├┼┤└┴┘"
+	HeavyBorder            = "━┃┏┳┓┣╋┫┗┻┛"
+	DoubleBorder           = "═║╔╦╗╠╬╣╚╩╝"
 )
 
 // DrawAt draws the given cells in termbox at the given location (0x, 0y).
@@ -116,22 +135,7 @@ func (b *Border) Type() UIElementType {
 	return UITypeBorder
 }
 
-// BorderSet is a set of characters that can be used to border a UI element.
-// BorderSets must be laid out in the following order:
-//
-// Top Left, Top Right, Bottom Left, Bottom Right, Horizontal, Vertical
-// VerticalRight, VerticalLeft, LeftUp, Center,DownHorizontal
-//
-// TODO: Add remaining borders.
-type BorderSet TileSet
-
 type TileSet string
-
-const (
-	LightBorder  BorderSet = "┌┐└┘─│┤├┴┼┬"
-	HeavyBorder            = "┏┓┗┛━┃┫┣┻╋┳"
-	DoubleBorder           = "╔╗╚╝═║╣╠╩╬╦"
-)
 
 // Bounds hold the top left-most and bottom right-most points of a UIElement
 type Bounds [2]Point
@@ -188,7 +192,7 @@ func (u *UI) Draw() error {
 	if err != nil {
 		return err
 	}
-	Ping()
+	stdConn.Ping()
 	// Print each view
 	for _, v := range u.Views {
 		err := v.Draw()
@@ -209,7 +213,7 @@ func (u *UI) Name() string {
 }
 
 // Run runs the active UI.
-func Run() {
+func (u *UI) Run() {
 	err := termbox.Init()
 	defer termbox.Close()
 	if err != nil {
@@ -217,20 +221,14 @@ func Run() {
 	}
 	termbox.SetOutputMode(termbox.Output256)
 
-main:
 	for {
-		ui.Draw()
+		u.Draw()
 		action, err := Input()
 		if err != nil && err.Error() != KeyNotBoundError {
 			panic(err)
 		}
 		if action != nil {
-			switch action.Name {
-			case "Quit":
-				break main
-			case "Move":
-				Move(action)
-			}
+			stdConn.HandleAction(action)
 		}
 	}
 }
@@ -298,18 +296,33 @@ func (v *View) Draw() error {
 	defer termbox.Flush()
 
 	// TODO: (10) Squad map get
-	m := std.Maps[std.Squad[0].Pos().Map]
+	// FIXME:
+	m := stdConn.Maps()[stdConn.Squad()[0].Pos().Map]
+	// m := &Map{}
 
 	// Get tiles from the map
 	tiles := m.TileSlice(v.Bounds[0].X, v.Bounds[0].Y, v.Bounds[1].X,
 		v.Bounds[1].Y)
 
 	// Draw the tiles.
-	for y := 0; y < len(tiles[0]); y++ {
-		for x := 0; x < len(tiles); x++ {
-			cell := tiles[x][y]
+	var x, y int
+	for y = 0; y < len(tiles[0]); y++ {
+		for x = 0; x < len(tiles); x++ {
+			cell := tiles[x][y].Sprite
 			termbox.SetCell(x+v.Origin.X, y+v.Origin.Y, cell.Ch, cell.Fg, cell.Bg)
+		}
+		for x = len(tiles); x <= v.Bounds[1].X; x++ {
+			SetCell(x+v.Origin.X, y+v.Origin.Y, EmptyTile)
+		}
+	}
+	for y = len(tiles[0]); y <= v.Bounds[1].Y; y++ {
+		for x = 0; x < v.Bounds[1].X; x++ {
+			SetCell(x+v.Origin.X, y+v.Origin.Y, EmptyTile)
 		}
 	}
 	return nil
+}
+
+func SetCell(x, y int, c termbox.Cell) {
+	termbox.SetCell(x, y, c.Ch, c.Fg, c.Bg)
 }

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	// termbox "github.com/nsf/termbox-go"
-	"testing"
+	// "testing"
 )
 
 func JSONTester(obj interface{}, out interface{}) error {
@@ -101,13 +101,16 @@ func TestActions(t *testing.T) {
 	}
 }
 */
-
+/*
 func TestMoreJSON(t *testing.T) {
 	n := NewPlayer("Player", 1)
-	/*	m := map[string]*player{
-			"Player_1": n.(*player),
-		}
-	*/m := map[string]Player{
+*/
+/*	m := map[string]*player{
+		"Player_1": n.(*player),
+	}
+*/
+/*
+m := map[string]Player{
 		"Player_1": n.(*player),
 	}
 	data, err := json.Marshal(m)
@@ -152,3 +155,4 @@ func AsPos(v map[string]interface{}) *Pos {
 	}
 	return nil
 }
+*/

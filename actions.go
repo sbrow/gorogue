@@ -1,10 +1,32 @@
 package gorogue
 
 // Actions are the heart of the game's operation.
-type Action struct {
-	Name   string        // The name of the Action to be performed.
-	Caller string        // The originator of the Action.
-	Args   []interface{} // Any relevant parameters the action needs.
+type Action interface {
+	Name() string        // The name of the Action to be performed.
+	Caller() string      // The originator of the Action.
+	Args() []interface{} // Any relevant parameters the action needs.
+}
+
+type BaseAction struct {
+	name   string
+	caller string
+	args   []interface{}
+}
+
+func NewAction(name, caller string, args ...interface{}) *BaseAction {
+	return &BaseAction{name: name, caller: caller, args: args}
+}
+
+func (b *BaseAction) Name() string {
+	return b.name
+}
+
+func (b *BaseAction) Caller() string {
+	return b.caller
+}
+
+func (b *BaseAction) Args() []interface{} {
+	return b.args
 }
 
 // ActionResponse is a stuct returned from the server to a client or NPC,
@@ -14,15 +36,13 @@ type ActionResponse struct {
 	Reply bool    // Whether the action completed sucessfully
 }
 
-// MoveAction is used to move Objects.
-type MoveAction struct {
-	Caller string // The originator of the MocwAction.
-	Target string // The name of the Actor to move.
-	Pos    Pos    // The coordinates to move them to.
+type ActionQuit struct {
+	Caller string
 }
 
-// MoveAction is used to spawn Objects.
-type SpawnAction struct {
-	Caller string
-	Actors Actors // TODO: (8) Change to object rather than Actor.
+func (a *ActionQuit) Action() Action {
+	return &BaseAction{
+		name:   "Quit",
+		caller: a.Caller,
+	}
 }

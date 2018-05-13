@@ -13,25 +13,28 @@ var Commands map[Command]Action
 // Keybinds stores all currently bound keys.
 var Keybinds map[Key]Action
 
+// Special keys are listed here:
+//
+// TODO add more keys.
 var (
 	Esc       Key = Key{0, termbox.KeyEsc, 0}
-	Tab       Key = Key{0, termbox.KeyTab, 0}
-	Space     Key = Key{0, termbox.KeySpace, 0}
-	Backspace Key = Key{0, termbox.KeyBackspace, 0}
-	Enter     Key = Key{0, termbox.KeyEnter, 0}
+	Tab           = Key{0, termbox.KeyTab, 0}
+	Space         = Key{0, termbox.KeySpace, 0}
+	Backspace     = Key{0, termbox.KeyBackspace, 0}
+	Enter         = Key{0, termbox.KeyEnter, 0}
 )
 
 func init() {
 	//Actions
-	quit := Action{Name: "Quit"}
-	moveNorth := Action{Name: "Move", Caller: "Client", Args: []interface{}{North}}
-	moveNorthEast := Action{Name: "Move", Caller: "Client", Args: []interface{}{NorthEast}}
-	moveNorthWest := Action{Name: "Move", Caller: "Client", Args: []interface{}{NorthWest}}
-	moveEast := Action{Name: "Move", Caller: "Client", Args: []interface{}{East}}
-	moveSouth := Action{Name: "Move", Caller: "Client", Args: []interface{}{South}}
-	moveSouthEast := Action{Name: "Move", Caller: "Client", Args: []interface{}{SouthEast}}
-	moveWest := Action{Name: "Move", Caller: "Client", Args: []interface{}{West}}
-	moveSouthWest := Action{Name: "Move", Caller: "Client", Args: []interface{}{SouthWest}}
+	quit := NewAction("Quit", "Client")
+	moveNorth := NewAction("Move", "Client", North)
+	moveNorthEast := NewAction("Move", "Client", NorthEast)
+	moveNorthWest := NewAction("Move", "Client", NorthWest)
+	moveEast := NewAction("Move", "Client", East)
+	moveSouth := NewAction("Move", "Client", South)
+	moveSouthEast := NewAction("Move", "Client", SouthEast)
+	moveWest := NewAction("Move", "Client", West)
+	moveSouthWest := NewAction("Move", "Client", SouthWest)
 
 	Keybinds = map[Key]Action{
 		Esc:            quit,
@@ -59,8 +62,7 @@ func BindKey(key Key, Action Action) {
 }
 
 // Input polls the user for a Key, and returns the Action it's mapped to (if any).
-func Input() (*Action, error) {
-
+func Input() (Action, error) {
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
 		case termbox.EventKey:
@@ -77,25 +79,11 @@ func Input() (*Action, error) {
 	return nil, errors.New("Something  went wrong.")
 }
 
-func KeyPressed(key Key) (*Action, error) {
+func KeyPressed(key Key) (Action, error) {
 	if act, ok := Keybinds[key]; ok {
-		return &act, nil
+		return act, nil
 	} else {
 		return nil, errors.New(KeyNotBoundError)
 	}
 
-}
-
-// Command is a string mapped to an Action. Commands are  intended to be called
-// in a Vi style command bar.
-//
-// TODO: (7) Implement Vi command bar.
-type Command string
-
-// Keyd is a keyboard key mapped to an Action. See package github.com/nsf/termbox-go
-// for more information.
-type Key struct {
-	Mod termbox.Modifier // One of termbox.Mod* constants or 0.
-	Key termbox.Key      // One of termbox.Key* constants, invalid if 'Ch' is not 0.
-	Ch  rune             // a unicode character.
 }
