@@ -3,6 +3,7 @@
 package example
 
 import (
+	"errors"
 	"fmt"
 	termbox "github.com/nsf/termbox-go"
 	engine "github.com/sbrow/gorogue"
@@ -10,16 +11,18 @@ import (
 	"os"
 )
 
-func CheckError(e error) {
-	switch e {
-	case rpc.ErrShutdown:
-		termbox.Close()
-		fmt.Println("The server shut down unexpectedly.")
-		os.Exit(1)
-	case nil:
-		return
-	default:
-		panic(e)
+func CheckErrors(errs ...error) {
+	for _, e := range errs {
+		switch e {
+		case rpc.ErrShutdown:
+			termbox.Close()
+			fmt.Println("The server shut down unexpectedly.")
+			os.Exit(1)
+		case nil:
+			return
+		default:
+			panic(e)
+		}
 	}
 }
 
@@ -34,14 +37,28 @@ func (c *Client) Addr() string {
 	return c.addr
 }
 
-func (c *Client) HandleAction(a engine.Action) {
+func (c *Client) Disconnect() {
+	fmt.Println("DCing\nDCing")
+	var reply *string
+	addr := c.Addr()
+	if err := c.client.Call("Server.Disconnect", &addr, &reply); err != nil {
+		panic(err)
+	}
+	if err := c.client.Close(); err != nil {
+		panic(err)
+	}
+}
+
+func (c *Client) HandleAction(a engine.Action) error {
 	switch a.Name() {
 	case "Quit":
-		termbox.Close()
-		os.Exit(0)
+		return errors.New("Leaving...")
 	case "Move":
-		c.Move(a)
+		return c.Move(a)
+	default:
+		return nil
 	}
+	return nil
 }
 
 func (c *Client) Init() *engine.UI {
@@ -60,12 +77,13 @@ func (c *Client) Maps() map[string]engine.Map {
 }
 
 // Move requests that the server move actor a in direction dir.
-func (c *Client) Move(a engine.Action) {
+func (c *Client) Move(a engine.Action) error {
 	var ma MoveAction
 	// TODO: Make converter from Action to *MoveAction
 	var p engine.Pos
 	if a.Name() != "Move" {
-		return
+		//TODO: ErrorWrongAction or something.
+		return nil
 	}
 	if a.Caller() == "Client" {
 		caller := c.Squad()[0] // TODO: (8) Implement active squad member.
@@ -96,16 +114,17 @@ func (c *Client) Move(a engine.Action) {
 	}
 	ma.Pos = p
 
-	var reply *engine.ActionResponse
+	var reply *string
 	err := c.client.Call("Server.Move", ma, &reply)
-	CheckError(err)
+	CheckErrors(err)
+	return nil
 }
 
 // Ping asks the server for all information relevant to the client.
 func (c *Client) Ping() {
 	var reply *Pong
 	err := c.client.Call("Server.Ping", c.Addr(), &reply)
-	CheckError(err)
+	CheckErrors(err)
 	c.maps = reply.Maps
 	c.squad = reply.Squad
 }
@@ -132,7 +151,7 @@ func (c *Client) Spawn(a ...engine.Actor) {
 
 	// Safe
 	err := c.client.Call("Server.Spawn", args, &reply)
-	CheckError(err)
+	CheckErrors(err)
 }
 
 func (c *Client) Squad() []engine.Actor {

@@ -29,13 +29,6 @@ func (b *BaseAction) Args() []interface{} {
 	return b.args
 }
 
-// ActionResponse is a stuct returned from the server to a client or NPC,
-// informing them of whether their action was performed, and if not, why not.
-type ActionResponse struct {
-	Msg   *string // Message to display to the user / logs.
-	Reply bool    // Whether the action completed sucessfully
-}
-
 type ActionQuit struct {
 	Caller string
 }

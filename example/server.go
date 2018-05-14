@@ -30,6 +30,19 @@ func (s *Server) Conns() map[string]*engine.Conn {
 	return s.conns
 }
 
+func (s *Server) Disconnect(args *string, reply *string) error {
+	log.Printf("%s Disconnected.\n", *args)
+	for _, actor := range s.conns[*args].Squad {
+		for _, v := range s.Maps {
+			if v.Remove(actor) == true {
+				break
+			}
+		}
+	}
+	s.conns[*args] = nil
+	return nil
+}
+
 func (s *Server) HandleRequests() {
 	if s.Maps == nil {
 		s.Maps = map[string]*Map{
@@ -71,7 +84,7 @@ func (s *Server) Ping(addr *string, reply *Pong) error {
 	return nil
 }
 
-func (s *Server) Move(args *MoveAction, reply *engine.ActionResponse) error {
+func (s *Server) Move(args *MoveAction, reply *string) error {
 	log.Println("Recieved action", *args)
 	// TODO: (2) Temporary map Fix
 	var m *Map
@@ -82,16 +95,9 @@ func (s *Server) Move(args *MoveAction, reply *engine.ActionResponse) error {
 		if p.Name() == args.Caller {
 			_ = m.WaitForTurn(1)
 			p.Move(args.Pos)
-			*reply = engine.ActionResponse{
-				Reply: true,
-			}
 			return nil
 		}
 	}
-	*reply = engine.ActionResponse{
-		Reply: false,
-	}
-	*reply.Msg = "Actor not found."
 	return nil
 }
 

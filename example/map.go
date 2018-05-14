@@ -47,6 +47,27 @@ func (m *Map) Actors() []engine.Actor {
 	return a
 }
 
+func (m *Map) Remove(a engine.Actor) bool {
+	for i, actor := range m.Players {
+		if actor.Name() == a.Name() {
+			switch {
+			case len(m.Players)-1 == 0:
+				m.Players = []engine.Actor{}
+			case len(m.Players)-1 == i:
+				m.Players = m.Players[:i-1]
+			default:
+				if i == 0 {
+
+					m.Players = append([]engine.Actor{}, m.Players[i:]...)
+				}
+				m.Players = append(m.Players[:i-1], m.Players[i:]...)
+			}
+			return true
+		}
+	}
+	return false
+}
+
 // Tick moves time forward one tick after it has received a valid Action from each
 // Actor on the Map. Tick blocks all NPCs and connections.
 //

@@ -30,7 +30,7 @@ const (
 // Currently, this will write over any existing cells.
 //
 // DrawAt returns OutOfScreenBoundryError if the drawing exceeds termbox's size.
-func (u UI) DrawAt(cells [][]termbox.Cell, Ox, Oy int) error {
+func DrawAt(cells [][]termbox.Cell, Ox, Oy int) error {
 	defer termbox.Flush()
 	for y := 0; y < len(cells[0]); y++ {
 		for x := 0; x < len(cells); x++ {
@@ -38,13 +38,13 @@ func (u UI) DrawAt(cells [][]termbox.Cell, Ox, Oy int) error {
 			termbox.SetCell(Ox+x, Oy+y, cell.Ch, cell.Fg, cell.Bg)
 		}
 	}
-	return u.OutOfScreenBoundryError(Bounds{Point{Ox, Oy},
+	return OutOfScreenBoundryError(Bounds{Point{Ox, Oy},
 		Point{Ox + len(cells), Oy + len(cells[0])}})
 }
 
 // Returned after an element is drawn.
 // Returns nil if b does not exceed the terminal's size.
-func (u UI) OutOfScreenBoundryError(b Bounds) error {
+func OutOfScreenBoundryError(b Bounds) error {
 	w, h := termbox.Size()
 	var x, y int
 
@@ -70,7 +70,7 @@ func (u UI) OutOfScreenBoundryError(b Bounds) error {
 // String prints an unterminated string, starting at the given coordinates (Ox, Oy).
 //
 // String returns OutOfScreenBoundryError if the drawing exceeds termbox's size.
-func (u UI) String(Ox, Oy int, fg, bg termbox.Attribute, s string) error {
+func DrawString(Ox, Oy int, fg, bg termbox.Attribute, s string) error {
 	defer termbox.Flush()
 	x, y := Ox, Oy
 	for _, c := range s {
@@ -85,7 +85,7 @@ func (u UI) String(Ox, Oy int, fg, bg termbox.Attribute, s string) error {
 			x++
 		}
 	}
-	return u.OutOfScreenBoundryError(Bounds{Point{Ox, Oy}, Point{x, y}})
+	return OutOfScreenBoundryError(Bounds{Point{Ox, Oy}, Point{x, y}})
 }
 
 // Border is a border around a UI element.
@@ -228,7 +228,10 @@ func (u *UI) Run() {
 			panic(err)
 		}
 		if action != nil {
-			stdConn.HandleAction(action)
+			err := stdConn.HandleAction(action)
+			if err != nil {
+				return
+			}
 		}
 	}
 }

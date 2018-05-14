@@ -53,7 +53,7 @@ func CatchSignals() {
 	}()
 }
 
-// Actor is an object that can act freely. There are two main kinds of actors:
+// Actor is an object that can Move. There are two main kinds of actors:
 // player characters and non-player characters (NPCs). The important
 // distinction being that NPCs are controlled by the server, and Player
 // characters are controlled by clients.
@@ -62,7 +62,7 @@ func CatchSignals() {
 // separate from other actors. The server receives requests to act from each NPC,
 // and determines whether that action is valid. If if isn't, the action is rejected
 // and the Actor must choose a different action to perform. If the action is valid,
-// it gets stored in memory and is called during the next Map tick. (See Map.Tick)
+// it gets stored in in a buffer and is called during the next Map.Tick().
 type Actor interface {
 	Object             // The Object interface.
 	Move(pos Pos) bool // Moves the Actor to the given position.
@@ -76,9 +76,10 @@ type Command string
 
 type Client interface {
 	Addr() string
+	Disconnect()
 	Init() *UI
 	Ping()
-	HandleAction(a Action)
+	HandleAction(a Action) error
 	Maps() map[string]Map
 	Squad() []Actor
 	SetAddr(addr string)

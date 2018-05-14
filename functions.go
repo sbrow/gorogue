@@ -15,8 +15,8 @@ func NewClient(c Client, host, port string) error {
 	if err != nil {
 		return err
 	}
+	defer stdConn.Disconnect()
 
-	defer conn.Close()
 	var addr []byte = make([]byte, 24)
 	if _, err := conn.Read(addr); err != nil {
 		return err
