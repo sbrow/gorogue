@@ -112,22 +112,22 @@ func (b *Border) Draw() {
 
 	s := []rune(fmt.Sprint(b.BorderSet))
 
-	// Print the corners.
-	termbox.SetCell(Ox, Oy, s[0], termbox.ColorDefault, termbox.ColorBlack)
-	termbox.SetCell(w-1, Oy, s[1], termbox.ColorDefault, termbox.ColorBlack)
-	termbox.SetCell(Ox, h-1, s[2], termbox.ColorDefault, termbox.ColorBlack)
-	termbox.SetCell(w-1, h-1, s[3], termbox.ColorDefault, termbox.ColorBlack)
-
 	// Print the horizontals
 	for x := 1; x < w-1; x++ {
-		termbox.SetCell(x, Oy, s[4], termbox.ColorDefault, termbox.ColorBlack)
-		termbox.SetCell(x, h-1, s[4], termbox.ColorDefault, termbox.ColorBlack)
+		termbox.SetCell(x, Oy, s[0], termbox.ColorDefault, termbox.ColorBlack)
+		termbox.SetCell(x, h-1, s[0], termbox.ColorDefault, termbox.ColorBlack)
 	}
 	// Print the verticals
 	for y := 1; y < h-1; y++ {
-		termbox.SetCell(Ox, y, s[5], termbox.ColorDefault, termbox.ColorBlack)
-		termbox.SetCell(w-1, y, s[5], termbox.ColorDefault, termbox.ColorBlack)
+		termbox.SetCell(Ox, y, s[1], termbox.ColorDefault, termbox.ColorBlack)
+		termbox.SetCell(w-1, y, s[1], termbox.ColorDefault, termbox.ColorBlack)
 	}
+
+	// Print the corners.
+	termbox.SetCell(Ox, Oy, s[2], termbox.ColorDefault, termbox.ColorBlack)
+	termbox.SetCell(w-1, Oy, s[4], termbox.ColorDefault, termbox.ColorBlack)
+	termbox.SetCell(Ox, h-1, s[8], termbox.ColorDefault, termbox.ColorBlack)
+	termbox.SetCell(w-1, h-1, s[10], termbox.ColorDefault, termbox.ColorBlack)
 }
 
 // Type return's b's UIElementType.
