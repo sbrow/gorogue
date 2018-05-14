@@ -7,31 +7,34 @@ import (
 
 const KeyNotBoundError string = "Key not bound"
 
-// Command is a string mapped to an Action intended to be called Vi style.
+// Commands stores all currently bound commands
 var Commands map[Command]Action
 
-// Keybind is a key mapped to an Action.
+// Keybinds stores all currently bound keys.
 var Keybinds map[Key]Action
 
+// Special keys are listed here:
+//
+// TODO add more keys.
 var (
 	Esc       Key = Key{0, termbox.KeyEsc, 0}
-	Tab       Key = Key{0, termbox.KeyTab, 0}
-	Space     Key = Key{0, termbox.KeySpace, 0}
-	Backspace Key = Key{0, termbox.KeyBackspace, 0}
-	Enter     Key = Key{0, termbox.KeyEnter, 0}
+	Tab           = Key{0, termbox.KeyTab, 0}
+	Space         = Key{0, termbox.KeySpace, 0}
+	Backspace     = Key{0, termbox.KeyBackspace, 0}
+	Enter         = Key{0, termbox.KeyEnter, 0}
 )
 
 func init() {
 	//Actions
-	quit := Action{Name: "Quit"}
-	moveNorth := Action{Name: "Move", Caller: "Client", Args: []interface{}{North}}
-	moveNorthEast := Action{Name: "Move", Caller: "Client", Args: []interface{}{NorthEast}}
-	moveNorthWest := Action{Name: "Move", Caller: "Client", Args: []interface{}{NorthWest}}
-	moveEast := Action{Name: "Move", Caller: "Client", Args: []interface{}{East}}
-	moveSouth := Action{Name: "Move", Caller: "Client", Args: []interface{}{South}}
-	moveSouthEast := Action{Name: "Move", Caller: "Client", Args: []interface{}{SouthEast}}
-	moveWest := Action{Name: "Move", Caller: "Client", Args: []interface{}{West}}
-	moveSouthWest := Action{Name: "Move", Caller: "Client", Args: []interface{}{SouthWest}}
+	quit := NewAction("Quit", "Client")
+	moveNorth := NewAction("Move", "Client", North)
+	moveNorthEast := NewAction("Move", "Client", NorthEast)
+	moveNorthWest := NewAction("Move", "Client", NorthWest)
+	moveEast := NewAction("Move", "Client", East)
+	moveSouth := NewAction("Move", "Client", South)
+	moveSouthEast := NewAction("Move", "Client", SouthEast)
+	moveWest := NewAction("Move", "Client", West)
+	moveSouthWest := NewAction("Move", "Client", SouthWest)
 
 	Keybinds = map[Key]Action{
 		Esc:            quit,
@@ -46,25 +49,20 @@ func init() {
 	}
 }
 
+// BindCommand maps a Command to an action, overwriting any action the
+// Command was previously mapped to
 func BindCommand(cmd Command, Action Action) {
 	Commands[cmd] = Action
 }
 
+// BindKey maps a key to an action, overwriting any action the
+// Key was previously mapped to
 func BindKey(key Key, Action Action) {
 	Keybinds[key] = Action
 }
 
-func KeyPressed(key Key) (*Action, error) {
-	if act, ok := Keybinds[key]; ok {
-		return &act, nil
-	} else {
-		return nil, errors.New(KeyNotBoundError)
-	}
-
-}
-
-func Input() (*Action, error) {
-
+// Input polls the user for a Key, and returns the Action it's mapped to (if any).
+func Input() (Action, error) {
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
 		case termbox.EventKey:
@@ -81,10 +79,11 @@ func Input() (*Action, error) {
 	return nil, errors.New("Something  went wrong.")
 }
 
-type Command string
+func KeyPressed(key Key) (Action, error) {
+	if act, ok := Keybinds[key]; ok {
+		return act, nil
+	} else {
+		return nil, errors.New(KeyNotBoundError)
+	}
 
-type Key struct {
-	Mod termbox.Modifier
-	Key termbox.Key
-	Ch  rune
 }
