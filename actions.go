@@ -17,16 +17,16 @@ func NewAction(name, caller string, args ...interface{}) *BaseAction {
 	return &BaseAction{name: name, caller: caller, args: args}
 }
 
-func (b *BaseAction) Name() string {
-	return b.name
+func (b *BaseAction) Args() []interface{} {
+	return b.args
 }
 
 func (b *BaseAction) Caller() string {
 	return b.caller
 }
 
-func (b *BaseAction) Args() []interface{} {
-	return b.args
+func (b *BaseAction) Name() string {
+	return b.name
 }
 
 type ActionQuit struct {

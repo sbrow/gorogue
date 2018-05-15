@@ -2,20 +2,13 @@ package gorogue
 
 import (
 	"errors"
+	"fmt"
 	termbox "github.com/nsf/termbox-go"
 )
 
-const KeyNotBoundError string = "Key not bound"
-
-// Commands stores all currently bound commands
-var Commands map[Command]Action
-
-// Keybinds stores all currently bound keys.
-var Keybinds map[Key]Action
-
-// Special keys are listed here:
+// Keys
 //
-// TODO add more keys.
+// TODO: finish adding.
 var (
 	Esc       Key = Key{0, termbox.KeyEsc, 0}
 	Tab           = Key{0, termbox.KeyTab, 0}
@@ -23,6 +16,12 @@ var (
 	Backspace     = Key{0, termbox.KeyBackspace, 0}
 	Enter         = Key{0, termbox.KeyEnter, 0}
 )
+
+// Commands stores all currently bound commands.
+var Commands map[Command]Action
+
+// Keybinds stores all currently bound keys.
+var Keybinds map[Key]Action
 
 func init() {
 	//Actions
@@ -49,14 +48,22 @@ func init() {
 	}
 }
 
-// BindCommand maps a Command to an action, overwriting any action the
-// Command was previously mapped to
+type KeyNotBoundError struct {
+	K Key
+}
+
+func (k *KeyNotBoundError) Error() string {
+	return fmt.Sprintf("Key %v not bound", k.K)
+}
+
+// BindCommand maps a Command to an Action, overwriting any Action the
+// Command was previously mapped to.
 func BindCommand(cmd Command, Action Action) {
 	Commands[cmd] = Action
 }
 
-// BindKey maps a key to an action, overwriting any action the
-// Key was previously mapped to
+// BindKey maps a Key to an Action, overwriting any Action the
+// Key was previously mapped to.
 func BindKey(key Key, Action Action) {
 	Keybinds[key] = Action
 }
@@ -83,7 +90,7 @@ func KeyPressed(key Key) (Action, error) {
 	if act, ok := Keybinds[key]; ok {
 		return act, nil
 	} else {
-		return nil, errors.New(KeyNotBoundError)
+		return nil, &KeyNotBoundError{key}
 	}
 
 }

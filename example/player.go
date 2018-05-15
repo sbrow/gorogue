@@ -3,9 +3,7 @@ package example
 import (
 	"encoding/json"
 	"fmt"
-	termbox "github.com/nsf/termbox-go"
 	engine "github.com/sbrow/gorogue"
-	. "github.com/sbrow/gorogue/lib"
 )
 
 // Actors is a wrapper for an array of Actors. It is necessary to
@@ -59,7 +57,7 @@ type Player struct {
 	name   string
 	index  int
 	pos    *engine.Pos
-	sprite termbox.Cell
+	sprite engine.Sprite
 }
 
 // NewPlayer creates a new Player using the standard '@' character sprite.
@@ -68,7 +66,7 @@ func NewPlayer(name string) *Player {
 		name:   name,
 		index:  1,
 		pos:    nil,
-		sprite: DefaultPlayer,
+		sprite: engine.DefaultPlayer,
 	}
 }
 
@@ -118,7 +116,7 @@ func (p *Player) SetPos(pos engine.Pos) {
 	p.pos = &pos
 }
 
-func (p *Player) Sprite() termbox.Cell {
+func (p *Player) Sprite() engine.Sprite {
 	return p.sprite
 }
 
@@ -141,6 +139,6 @@ type PlayerJSON struct {
 	Name   string
 	Index  int
 	Pos    *engine.Pos
-	Sprite termbox.Cell
+	Sprite engine.Sprite
 	Type   string
 }

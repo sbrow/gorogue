@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	termbox "github.com/nsf/termbox-go"
-	. "github.com/sbrow/gorogue/lib"
 )
 
 var stdConn Client
@@ -14,8 +13,10 @@ var stdUI *UI
 // BorderSet is a set of characters that can be used to border a UI element.
 // BorderSets must be laid out in the following order:
 //
-// Top Left, Top Right, Bottom Left, Bottom Right, Horizontal, Vertical
-// VerticalRight, VerticalLeft, LeftUp, Center,DownHorizontal
+// Horizontal, Vertical
+// Top-Left, Top-Middle, Top-Right
+// Left-Middle, Center, Right-Middle
+// Bottom-Left, Bottom-Middle, Bottom-Right
 //
 // TODO: Add remaining borders.
 type BorderSet TileSet
@@ -27,19 +28,60 @@ const (
 )
 
 // DrawAt draws the given cells in termbox at the given location (0x, 0y).
-// Currently, this will write over any existing cells.
+// Currently, this will overwrite any existing cells.
 //
-// DrawAt returns OutOfScreenBoundryError if the drawing exceeds termbox's size.
+// DrawAt returns an OutOfScreenBoundryError if the drawing exceeds termbox's size.
 func DrawAt(cells [][]termbox.Cell, Ox, Oy int) error {
 	defer termbox.Flush()
 	for y := 0; y < len(cells[0]); y++ {
 		for x := 0; x < len(cells); x++ {
-			cell := cells[x][y]
-			termbox.SetCell(Ox+x, Oy+y, cell.Ch, cell.Fg, cell.Bg)
+			SetCell(Ox+x, Oy+y, cells[x][y])
 		}
 	}
-	return OutOfScreenBoundryError(Bounds{Point{Ox, Oy},
-		Point{Ox + len(cells), Oy + len(cells[0])}})
+	return OutOfScreenBoundryError(Bounds{
+		Point{Ox, Oy},
+		Point{Ox + len(cells), Oy + len(cells[0])},
+	})
+}
+
+// DrawRawString prints a string starting at the given coordinates (Ox, Oy).
+// Line break ('\n') and carriage return ('\r') characters are not handled
+// specially and will appear as spaces.
+//
+// DrawRawString returns OutOfScreenBoundryError if the drawing exceeds termbox's size.
+func DrawRawString(Ox, Oy int, fg, bg termbox.Attribute, s string) error {
+	defer termbox.Flush()
+	x, y := Ox, Oy
+	for _, r := range s {
+		termbox.SetCell(x, y, r, fg, bg)
+		x++
+	}
+	return OutOfScreenBoundryError(Bounds{Point{Ox, Oy}, Point{x, y}})
+}
+
+// DrawString prints a string starting at the given coordinates (Ox, Oy).
+//
+// Line Break ('\n') runes will move the cursor to the beginning of the next line,
+//
+// Carriage Return ('\r') runes will move the cursor to the beginning of the current line.
+//
+// DrawString returns OutOfScreenBoundryError if the drawing exceeds termbox's size.
+func DrawString(Ox, Oy int, fg, bg termbox.Attribute, s string) error {
+	defer termbox.Flush()
+	x, y := Ox, Oy
+	for _, r := range s {
+		switch r {
+		case '\n':
+			y++
+			fallthrough
+		case '\r':
+			x = Ox
+		default:
+			termbox.SetCell(x, y, r, fg, bg)
+			x++
+		}
+	}
+	return OutOfScreenBoundryError(Bounds{Point{Ox, Oy}, Point{x, y}})
 }
 
 // Returned after an element is drawn.
@@ -65,27 +107,6 @@ func OutOfScreenBoundryError(b Bounds) error {
 			"exceeds screen boundries [%d, %d]", x, y, w, h))
 	}
 	return nil
-}
-
-// String prints an unterminated string, starting at the given coordinates (Ox, Oy).
-//
-// String returns OutOfScreenBoundryError if the drawing exceeds termbox's size.
-func DrawString(Ox, Oy int, fg, bg termbox.Attribute, s string) error {
-	defer termbox.Flush()
-	x, y := Ox, Oy
-	for _, c := range s {
-		switch c {
-		case '\r':
-		case '\n':
-			x--
-			y++
-			fallthrough
-		default:
-			termbox.SetCell(x, y, c, fg, bg)
-			x++
-		}
-	}
-	return OutOfScreenBoundryError(Bounds{Point{Ox, Oy}, Point{x, y}})
 }
 
 // Border is a border around a UI element.
@@ -141,8 +162,6 @@ type TileSet string
 type Bounds [2]Point
 
 // UI holds everything a player sees in game.
-//
-// TODO: Improve UI description.
 type UI struct {
 	name   string
 	bounds Bounds
@@ -224,8 +243,8 @@ func (u *UI) Run() {
 	for {
 		u.Draw()
 		action, err := Input()
-		if err != nil && err.Error() != KeyNotBoundError {
-			panic(err)
+		if err != nil { //&& err.Error() != KeyNotBoundError { TODO: fix
+			// panic(err)
 		}
 		if action != nil {
 			err := stdConn.HandleAction(action)
@@ -315,12 +334,12 @@ func (v *View) Draw() error {
 			termbox.SetCell(x+v.Origin.X, y+v.Origin.Y, cell.Ch, cell.Fg, cell.Bg)
 		}
 		for x = len(tiles); x <= v.Bounds[1].X; x++ {
-			SetCell(x+v.Origin.X, y+v.Origin.Y, EmptyTile)
+			SetCell(x+v.Origin.X, y+v.Origin.Y, EmptyTile.Cell())
 		}
 	}
 	for y = len(tiles[0]); y <= v.Bounds[1].Y; y++ {
 		for x = 0; x < v.Bounds[1].X; x++ {
-			SetCell(x+v.Origin.X, y+v.Origin.Y, EmptyTile)
+			SetCell(x+v.Origin.X, y+v.Origin.Y, EmptyTile.Cell())
 		}
 	}
 	return nil

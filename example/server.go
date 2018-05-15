@@ -64,7 +64,7 @@ func (s *Server) HandleRequests() {
 		if conn, err := l.Accept(); err != nil {
 			panic(err)
 		} else {
-			log.Printf("Connection established on %s", conn.RemoteAddr())
+			log.Printf("%s Connected.", conn.RemoteAddr())
 			addr := fmt.Sprint(conn.RemoteAddr())
 			conn.Write([]byte(addr))
 			s.conns[addr] = &engine.Conn{Conn: &conn, Squad: []engine.Actor{}}
@@ -85,7 +85,7 @@ func (s *Server) Ping(addr *string, reply *Pong) error {
 }
 
 func (s *Server) Move(args *MoveAction, reply *string) error {
-	log.Println("Recieved action", *args)
+	log.Println("Recieved action", args.String())
 	// TODO: (2) Temporary map Fix
 	var m *Map
 	for _, m = range s.Maps {

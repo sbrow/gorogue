@@ -2,7 +2,6 @@ package example
 
 import (
 	engine "github.com/sbrow/gorogue"
-	. "github.com/sbrow/gorogue/lib"
 	"log"
 )
 
@@ -28,7 +27,7 @@ func NewMap(w, h int, name string) *Map {
 	for x := 0; x < w; x++ {
 		m.Tiles = append(m.Tiles, []engine.Tile{})
 		for y := 0; y < h; y++ {
-			m.Tiles[x] = append(m.Tiles[x], engine.Tile{FloorTile})
+			m.Tiles[x] = append(m.Tiles[x], engine.FloorTile)
 		}
 	}
 	m.actions = make(chan int)
@@ -38,9 +37,6 @@ func NewMap(w, h int, name string) *Map {
 
 func (m *Map) Actors() []engine.Actor {
 	a := []engine.Actor{}
-	// for _, n := range m.NPCs {
-	// a = append(a, Actor(n))
-	// }
 	for _, p := range m.Players {
 		a = append(a, p)
 	}

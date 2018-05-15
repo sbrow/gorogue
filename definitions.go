@@ -1,27 +1,5 @@
-// Package gorogue is a simple roguelike engine build in golang.
-//
-// Goals For This Project:
-//
-// 1. Keep it simple, stupid
-//
-// I'm building an engine, not a game. The idea
-// is to create a simple tool that any designer can extend to create their game.
-// I'm not going to bloat the repository with unnecessary things like lots of items,
-// or damage equations or things like that. Users will have to add those features
-// per their needs.
-//
-// 2. Focus on versatility
-//
-// I want this project to be flexible. That's why I'll be supporting a wide variety
-// of  "play styles" including: Turn Based, "Real time", Multi-player, and
-// Squad/Party based.
-//
-// 3. An engine is only as good as its documentation.
-//
-// 4. Implement as little as possible in the base package.
-//
-// Use the base package as a skeleton for any game to work from. Implement things
-// in subpackages so they can just as easily be extended as removed.
+// Package gorogue is a flexible roguelike engine written in Go.
+// Gorogue aims to be small, versatile, and modular.
 package gorogue
 
 import (
@@ -34,6 +12,8 @@ import (
 	"syscall"
 )
 
+// CatchSignals runs a goroutine that handles POSIX signals.
+// It gets called by NewServer.
 func CatchSignals() {
 	c := make(chan os.Signal, 2)
 	signal.Notify(c)
@@ -63,6 +43,8 @@ func CatchSignals() {
 // and determines whether that action is valid. If if isn't, the action is rejected
 // and the Actor must choose a different action to perform. If the action is valid,
 // it gets stored in in a buffer and is called during the next Map.Tick().
+//
+// TODO: This description is only valid for the client-server version.
 type Actor interface {
 	Object             // The Object interface.
 	Move(pos Pos) bool // Moves the Actor to the given position.
@@ -122,7 +104,7 @@ type Object interface {
 	Pos() *Pos
 	SetIndex(i int)
 	SetPos(p Pos)
-	Sprite() termbox.Cell
+	Sprite() Sprite
 	UnmarshalJSON(data []byte) error
 }
 
@@ -169,6 +151,21 @@ type Server interface {
 	SetPort(port string)
 }
 
+type Sprite termbox.Cell
+
+var (
+	DefaultPlayer Sprite = Sprite(termbox.Cell{'@', termbox.ColorWhite, termbox.ColorBlack})
+)
+
 type Tile struct {
-	Sprite termbox.Cell
+	Sprite
 }
+
+func (t Tile) Cell() termbox.Cell {
+	return termbox.Cell(t.Sprite)
+}
+
+var (
+	EmptyTile Tile = Tile{Sprite(termbox.Cell{' ', termbox.ColorWhite, termbox.ColorBlack})}
+	FloorTile      = Tile{Sprite(termbox.Cell{'.', termbox.ColorWhite, termbox.ColorBlack})}
+)
