@@ -3,9 +3,34 @@ package gorogue
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"net"
 	"net/rpc/jsonrpc"
+	"os"
+	"os/signal"
+	"syscall"
 )
+
+// CatchSignals runs a goroutine that handles POSIX signals.
+// It gets called by NewServer.
+func CatchSignals() {
+	c := make(chan os.Signal, 2)
+	signal.Notify(c)
+	go func() {
+		for sig := range c {
+			log.Println(sig)
+			switch sig {
+			case syscall.SIGTERM:
+				fallthrough
+			case syscall.SIGKILL:
+				fallthrough
+			case syscall.SIGINT:
+				log.Println("Exiting...")
+				os.Exit(1)
+			}
+		}
+	}()
+}
 
 // NewClient initializes a connection to a server. NewClient must be called to
 // connect to an online game, but can be ignored if using a local model.
@@ -33,11 +58,12 @@ func NewClient(c Client, host, port string) error {
 	stdConn.SetAddr(string(bytes.Trim(addr, "\x00")))
 	stdConn.SetRPC(jsonrpc.NewClient(conn))
 	stdUI = stdConn.Init()
-	// stdUI.Run()
+	stdUI.Run()
 	return nil
 }
 
-// NewServer starts a server on the given port.
+// NewServer starts a server on the given port. Servers are used to control
+// the World in an online game.
 func NewServer(s Server, port string) {
 	CatchSignals()
 	s.SetPort(port)

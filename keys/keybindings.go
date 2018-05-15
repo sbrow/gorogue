@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	termbox "github.com/nsf/termbox-go"
+	. "github.com/sbrow/gorogue"
+	"github.com/sbrow/gorogue/action"
 )
 
 // Keys
@@ -25,15 +27,15 @@ var Keybinds map[Key]Action
 
 func init() {
 	//Actions
-	quit := NewAction("Quit", "Client")
-	moveNorth := NewAction("Move", "Client", North)
-	moveNorthEast := NewAction("Move", "Client", NorthEast)
-	moveNorthWest := NewAction("Move", "Client", NorthWest)
-	moveEast := NewAction("Move", "Client", East)
-	moveSouth := NewAction("Move", "Client", South)
-	moveSouthEast := NewAction("Move", "Client", SouthEast)
-	moveWest := NewAction("Move", "Client", West)
-	moveSouthWest := NewAction("Move", "Client", SouthWest)
+	quit := action.New("Quit", "Client")
+	moveNorth := action.New("Move", "Client", North)
+	moveNorthEast := action.New("Move", "Client", NorthEast)
+	moveNorthWest := action.New("Move", "Client", NorthWest)
+	moveEast := action.New("Move", "Client", East)
+	moveSouth := action.New("Move", "Client", South)
+	moveSouthEast := action.New("Move", "Client", SouthEast)
+	moveWest := action.New("Move", "Client", West)
+	moveSouthWest := action.New("Move", "Client", SouthWest)
 
 	Keybinds = map[Key]Action{
 		Esc:            quit,
@@ -46,14 +48,6 @@ func init() {
 		Key{0, 0, 'j'}: moveSouth,
 		Key{0, 0, 'h'}: moveWest,
 	}
-}
-
-type KeyNotBoundError struct {
-	K Key
-}
-
-func (k *KeyNotBoundError) Error() string {
-	return fmt.Sprintf("Key %v not bound", k.K)
 }
 
 // BindCommand maps a Command to an Action, overwriting any Action the
@@ -93,4 +87,26 @@ func KeyPressed(key Key) (Action, error) {
 		return nil, &KeyNotBoundError{key}
 	}
 
+}
+
+// Command is a string mapped to an Action. Commands are  intended to be called
+// in a Vi style command bar.
+//
+// TODO: (7) Implement Vi command bar.
+type Command string
+
+// Key is a keyboard key mapped to an Action. See package github.com/nsf/termbox-go
+// for more information.
+type Key struct {
+	Mod termbox.Modifier // One of termbox.Mod* constants or 0.
+	Key termbox.Key      // One of termbox.Key* constants, invalid if 'Ch' is not 0.
+	Ch  rune             // a unicode character.
+}
+
+type KeyNotBoundError struct {
+	K Key
+}
+
+func (k *KeyNotBoundError) Error() string {
+	return fmt.Sprintf("Key %v not bound", k.K)
 }

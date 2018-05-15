@@ -4,33 +4,18 @@ package gorogue
 
 import (
 	termbox "github.com/nsf/termbox-go"
-	"log"
 	"net"
 	"net/rpc"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
-// CatchSignals runs a goroutine that handles POSIX signals.
-// It gets called by NewServer.
-func CatchSignals() {
-	c := make(chan os.Signal, 2)
-	signal.Notify(c)
-	go func() {
-		for sig := range c {
-			log.Println(sig)
-			switch sig {
-			case syscall.SIGTERM:
-				fallthrough
-			case syscall.SIGKILL:
-				fallthrough
-			case syscall.SIGINT:
-				log.Println("Exiting...")
-				os.Exit(1)
-			}
-		}
-	}()
+var stdConn Client
+
+var stdUI UI
+
+type Action interface {
+	Args() []interface{}
+	Caller() string
+	Name() string
 }
 
 // Actor is an object that can Move. There are two main kinds of actors:
@@ -50,16 +35,10 @@ type Actor interface {
 	Move(pos Pos) bool // Moves the Actor to the given position.
 }
 
-// Command is a string mapped to an Action. Commands are  intended to be called
-// in a Vi style command bar.
-//
-// TODO: (7) Implement Vi command bar.
-type Command string
-
 type Client interface {
 	Addr() string
 	Disconnect()
-	Init() *UI
+	Init() UI
 	Ping()
 	HandleAction(a Action) error
 	Maps() map[string]Map
@@ -108,14 +87,6 @@ type Object interface {
 	UnmarshalJSON(data []byte) error
 }
 
-// Key is a keyboard key mapped to an Action. See package github.com/nsf/termbox-go
-// for more information.
-type Key struct {
-	Mod termbox.Modifier // One of termbox.Mod* constants or 0.
-	Key termbox.Key      // One of termbox.Key* constants, invalid if 'Ch' is not 0.
-	Ch  rune             // a unicode character.
-}
-
 // Point represents a coordinate pair.
 type Point struct {
 	X int
@@ -145,7 +116,7 @@ func (p *Pos) Ints() (x, y int, Map string) {
 type Server interface {
 	Conns() map[string]*Conn
 	HandleRequests()
-	// Maps() map[string]*Map
+	Maps() map[string]Map
 	// Ping(addr *string, reply *Pong)
 	Port() string
 	SetPort(port string)
@@ -161,11 +132,15 @@ type Tile struct {
 	Sprite
 }
 
-func (t Tile) Cell() termbox.Cell {
-	return termbox.Cell(t.Sprite)
-}
-
 var (
 	EmptyTile Tile = Tile{Sprite(termbox.Cell{' ', termbox.ColorWhite, termbox.ColorBlack})}
 	FloorTile      = Tile{Sprite(termbox.Cell{'.', termbox.ColorWhite, termbox.ColorBlack})}
 )
+
+func (t Tile) Cell() termbox.Cell {
+	return termbox.Cell(t.Sprite)
+}
+
+type UI interface {
+	Run()
+}

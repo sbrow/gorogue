@@ -7,6 +7,9 @@ import (
 	"fmt"
 	termbox "github.com/nsf/termbox-go"
 	engine "github.com/sbrow/gorogue"
+	"github.com/sbrow/gorogue/action"
+	"github.com/sbrow/gorogue/assets"
+	"log"
 	"net/rpc"
 	"os"
 )
@@ -38,7 +41,6 @@ func (c *Client) Addr() string {
 }
 
 func (c *Client) Disconnect() {
-	fmt.Println("DCing\nDCing")
 	var reply *string
 	addr := c.Addr()
 	if err := c.client.Call("Server.Disconnect", &addr, &reply); err != nil {
@@ -47,6 +49,7 @@ func (c *Client) Disconnect() {
 	if err := c.client.Close(); err != nil {
 		panic(err)
 	}
+	log.Println("Disconnected from server.")
 }
 
 func (c *Client) HandleAction(a engine.Action) error {
@@ -61,11 +64,11 @@ func (c *Client) HandleAction(a engine.Action) error {
 	return nil
 }
 
-func (c *Client) Init() *engine.UI {
+func (c *Client) Init() engine.UI {
 	c.Spawn(NewPlayer("Player"))
 	c.Ping()
 	// TODO: (10) active squad member
-	return engine.Fullscreen(&c.Squad()[0].Pos().Map).UI
+	return assets.Fullscreen(c, &c.Squad()[0].Pos().Map)
 }
 
 func (c *Client) Maps() map[string]engine.Map {
@@ -78,8 +81,8 @@ func (c *Client) Maps() map[string]engine.Map {
 
 // Move requests that the server move actor a in direction dir.
 func (c *Client) Move(a engine.Action) error {
-	var ma MoveAction
-	// TODO: Make converter from Action to *MoveAction
+	var ma action.Move
+	// TODO: Make converter from Action to *Move
 	var p engine.Pos
 	if a.Name() != "Move" {
 		//TODO: ErrorWrongAction or something.
@@ -141,15 +144,11 @@ func (c *Client) SetRPC(conn *rpc.Client) {
 // The server determines where to spawn them and returns the map
 // where they spawned.
 func (c *Client) Spawn(a ...engine.Actor) {
-	args := &SpawnAction{
+	args := &Spawn{
 		Caller: c.Addr(),
 		Actors: a,
 	}
 	var reply *bool
-	// Unsafe
-	// _ = c.client.Call("Server.Spawn", args, &reply)
-
-	// Safe
 	err := c.client.Call("Server.Spawn", args, &reply)
 	CheckErrors(err)
 }

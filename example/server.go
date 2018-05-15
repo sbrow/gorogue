@@ -4,6 +4,7 @@ package example
 import (
 	"fmt"
 	engine "github.com/sbrow/gorogue"
+	"github.com/sbrow/gorogue/action"
 	"log"
 	"net"
 	"net/rpc"
@@ -22,7 +23,7 @@ type Pong struct {
 type Server struct {
 	engine.Server
 	port  string
-	Maps  map[string]*Map
+	maps  map[string]*Map
 	conns map[string]*engine.Conn
 }
 
@@ -33,7 +34,7 @@ func (s *Server) Conns() map[string]*engine.Conn {
 func (s *Server) Disconnect(args *string, reply *string) error {
 	log.Printf("%s Disconnected.\n", *args)
 	for _, actor := range s.conns[*args].Squad {
-		for _, v := range s.Maps {
+		for _, v := range s.maps {
 			if v.Remove(actor) == true {
 				break
 			}
@@ -44,8 +45,8 @@ func (s *Server) Disconnect(args *string, reply *string) error {
 }
 
 func (s *Server) HandleRequests() {
-	if s.Maps == nil {
-		s.Maps = map[string]*Map{
+	if s.maps == nil {
+		s.maps = map[string]*Map{
 			"Map_1": NewMap(24, 24, "Map_1"),
 		}
 	}
@@ -73,22 +74,19 @@ func (s *Server) HandleRequests() {
 	}
 }
 
-func (s *Server) Ping(addr *string, reply *Pong) error {
-	pong := &Pong{}
-	// TODO: (10) Reduce Pong to only relevant maps.
-	pong.Maps = s.Maps
-	for _, p := range s.conns[*addr].Squad {
-		pong.Squad = append(pong.Squad, p)
+func (s *Server) Maps() map[string]engine.Map {
+	var out map[string]engine.Map
+	for k, v := range s.maps {
+		out[k] = v
 	}
-	*reply = *pong
-	return nil
+	return out
 }
 
-func (s *Server) Move(args *MoveAction, reply *string) error {
+func (s *Server) Move(args *action.Move, reply *string) error {
 	log.Println("Recieved action", args.String())
 	// TODO: (2) Temporary map Fix
 	var m *Map
-	for _, m = range s.Maps {
+	for _, m = range s.maps {
 		break
 	}
 	for _, p := range m.Players {
@@ -101,19 +99,29 @@ func (s *Server) Move(args *MoveAction, reply *string) error {
 	return nil
 }
 
+func (s *Server) Ping(addr *string, reply *Pong) error {
+	pong := &Pong{}
+	// TODO: (10) Reduce Pong to only relevant maps.
+	pong.Maps = s.maps
+	for _, p := range s.conns[*addr].Squad {
+		pong.Squad = append(pong.Squad, p)
+	}
+	*reply = *pong
+	return nil
+}
+
 func (s *Server) SetPort(port string) {
 	s.port = port
 }
 
 // Spawn spawns new actors on the first map.
-func (s *Server) Spawn(args *SpawnAction, reply *bool) error {
-	log.Println("Args", *args)
+func (s *Server) Spawn(args *Spawn, reply *bool) error {
 	// TODO: (2) Temporary map Fix
 	var Map string
-	for Map, _ = range s.Maps {
+	for Map, _ = range s.maps {
 		break
 	}
-	m := s.Maps[Map]
+	m := s.maps[Map]
 	sq := s.conns[args.Caller].Squad
 	for _, a := range args.Actors {
 		switch v := a.(type) {
@@ -121,20 +129,9 @@ func (s *Server) Spawn(args *SpawnAction, reply *bool) error {
 			v.SetPos(engine.Pos{engine.Point{5, 5}, Map})
 			m.Players = append(m.Players, v)
 			sq = append(sq, v)
-			/*
-				_, present := m.Players[v.ID()]
-				for present {
-					v.SetIndex(v.Index() + 1)
-					_, present = m.Players[v.ID()]
-				}
-				m.Players[a.ID()] = v
-				sq = append(sq, m.Players[v.ID()].(Player))
-			*/
 		}
 	}
 	s.conns[args.Caller].Squad = sq
-	fmt.Println("Caller:", args.Caller, "Actor", args.Actors)
-	fmt.Printf("%+v\n", s.conns[args.Caller])
 	*reply = true
 	go m.Tick()
 	return nil

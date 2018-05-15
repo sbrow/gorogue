@@ -1,14 +1,12 @@
-package gorogue
+package ui
 
 import (
 	"errors"
 	"fmt"
 	termbox "github.com/nsf/termbox-go"
+	engine "github.com/sbrow/gorogue"
+	keys "github.com/sbrow/gorogue/keys"
 )
-
-var stdConn Client
-
-var stdUI *UI
 
 // BorderSet is a set of characters that can be used to border a UI element.
 // BorderSets must be laid out in the following order:
@@ -38,9 +36,9 @@ func DrawAt(cells [][]termbox.Cell, Ox, Oy int) error {
 			SetCell(Ox+x, Oy+y, cells[x][y])
 		}
 	}
-	return OutOfScreenBoundryError(Bounds{
-		Point{Ox, Oy},
-		Point{Ox + len(cells), Oy + len(cells[0])},
+	return OutOfScreenBoundry(Bounds{
+		engine.Point{Ox, Oy},
+		engine.Point{Ox + len(cells), Oy + len(cells[0])},
 	})
 }
 
@@ -56,7 +54,7 @@ func DrawRawString(Ox, Oy int, fg, bg termbox.Attribute, s string) error {
 		termbox.SetCell(x, y, r, fg, bg)
 		x++
 	}
-	return OutOfScreenBoundryError(Bounds{Point{Ox, Oy}, Point{x, y}})
+	return OutOfScreenBoundry(Bounds{engine.Point{Ox, Oy}, engine.Point{x, y}})
 }
 
 // DrawString prints a string starting at the given coordinates (Ox, Oy).
@@ -81,12 +79,14 @@ func DrawString(Ox, Oy int, fg, bg termbox.Attribute, s string) error {
 			x++
 		}
 	}
-	return OutOfScreenBoundryError(Bounds{Point{Ox, Oy}, Point{x, y}})
+	return OutOfScreenBoundry(Bounds{engine.Point{Ox, Oy}, engine.Point{x, y}})
 }
 
-// Returned after an element is drawn.
-// Returns nil if b does not exceed the terminal's size.
-func OutOfScreenBoundryError(b Bounds) error {
+// OutOfScreenBoundry determines whether the given boundries are larger than
+// termbox's current size. If they are, it returns an OutOfScreenBoundryError.
+//
+// Called by functions that draw to termbox.
+func OutOfScreenBoundry(b Bounds) error {
 	w, h := termbox.Size()
 	var x, y int
 
@@ -107,6 +107,12 @@ func OutOfScreenBoundryError(b Bounds) error {
 			"exceeds screen boundries [%d, %d]", x, y, w, h))
 	}
 	return nil
+}
+
+// SetCell is a wrapper for termbox.SetCell, which takes Cell attributes individually.
+// SetCell will set the state of the given Cell in termbox.
+func SetCell(x, y int, c termbox.Cell) {
+	termbox.SetCell(x, y, c.Ch, c.Fg, c.Bg)
 }
 
 // Border is a border around a UI element.
@@ -159,21 +165,23 @@ func (b *Border) Type() UIElementType {
 type TileSet string
 
 // Bounds hold the top left-most and bottom right-most points of a UIElement
-type Bounds [2]Point
+type Bounds [2]engine.Point
 
 // UI holds everything a player sees in game.
 type UI struct {
 	name   string
+	conn   engine.Client
 	bounds Bounds
 	Border *Border          // The UI's border (if any).
 	Views  map[string]*View // Views contained in this UI.
 }
 
 // New creates a new UI with a given name and size.
-func NewUI(name string, w, h int) *UI {
+func NewUI(conn engine.Client, name string, w, h int) *UI {
 	return &UI{
 		name:   name,
-		bounds: Bounds{Point{0, 0}, Point{w, h}},
+		conn:   conn,
+		bounds: Bounds{engine.Point{0, 0}, engine.Point{w, h}},
 		Border: nil,
 		Views:  map[string]*View{},
 	}
@@ -183,6 +191,7 @@ func NewUI(name string, w, h int) *UI {
 // The view is automatically adjusted to fit  if u has a Border.
 func (u *UI) AddView(name string, v View) {
 	u.Views[name] = &v
+	v.ui = u
 	V := u.Views[name]
 	if u.Border != nil {
 		V.Origin.X++
@@ -211,7 +220,7 @@ func (u *UI) Draw() error {
 	if err != nil {
 		return err
 	}
-	stdConn.Ping()
+	u.conn.Ping()
 	// Print each view
 	for _, v := range u.Views {
 		err := v.Draw()
@@ -242,12 +251,12 @@ func (u *UI) Run() {
 
 	for {
 		u.Draw()
-		action, err := Input()
+		action, err := keys.Input()
 		if err != nil { //&& err.Error() != KeyNotBoundError { TODO: fix
 			// panic(err)
 		}
 		if action != nil {
-			err := stdConn.HandleAction(action)
+			err := u.conn.HandleAction(action)
 			if err != nil {
 				return
 			}
@@ -296,9 +305,10 @@ const (
 
 // View is a window into a Map. Views can be any size.
 type View struct {
+	ui *UI
 	Bounds
-	Origin Point   // Where this view is located in the UI.
-	Map    *string // The Map data is drawn from.
+	Origin engine.Point // Where this view is located in the UI.
+	Map    *string      // The Map data is drawn from.
 }
 
 // NewView returns a newly created view.
@@ -308,7 +318,7 @@ type View struct {
 //
 // origin is the location in the UI where
 // you want this view to be placed.
-func NewView(bounds Bounds, m *string, origin Point) *View {
+func NewView(bounds Bounds, m *string, origin engine.Point) *View {
 	v := &View{Bounds: bounds, Origin: origin, Map: m}
 	return v
 }
@@ -319,7 +329,7 @@ func (v *View) Draw() error {
 
 	// TODO: (10) Squad map get
 	// FIXME:
-	m := stdConn.Maps()[stdConn.Squad()[0].Pos().Map]
+	m := v.ui.conn.Maps()[v.ui.conn.Squad()[0].Pos().Map]
 	// m := &Map{}
 
 	// Get tiles from the map
@@ -334,17 +344,13 @@ func (v *View) Draw() error {
 			termbox.SetCell(x+v.Origin.X, y+v.Origin.Y, cell.Ch, cell.Fg, cell.Bg)
 		}
 		for x = len(tiles); x <= v.Bounds[1].X; x++ {
-			SetCell(x+v.Origin.X, y+v.Origin.Y, EmptyTile.Cell())
+			SetCell(x+v.Origin.X, y+v.Origin.Y, engine.EmptyTile.Cell())
 		}
 	}
 	for y = len(tiles[0]); y <= v.Bounds[1].Y; y++ {
 		for x = 0; x < v.Bounds[1].X; x++ {
-			SetCell(x+v.Origin.X, y+v.Origin.Y, EmptyTile.Cell())
+			SetCell(x+v.Origin.X, y+v.Origin.Y, engine.EmptyTile.Cell())
 		}
 	}
 	return nil
-}
-
-func SetCell(x, y int, c termbox.Cell) {
-	termbox.SetCell(x, y, c.Ch, c.Fg, c.Bg)
 }
