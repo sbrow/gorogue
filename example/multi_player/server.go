@@ -4,7 +4,6 @@ package example
 import (
 	"fmt"
 	engine "github.com/sbrow/gorogue"
-	"github.com/sbrow/gorogue/action"
 	"log"
 	"net"
 	"net/rpc"
@@ -82,8 +81,8 @@ func (s *Server) Maps() map[string]engine.Map {
 	return out
 }
 
-func (s *Server) Move(args *action.Move, reply *string) error {
-	log.Println("Recieved action", args.String())
+func (s *Server) Move(args *engine.Move, reply *string) error {
+	log.Println("Recieved action", args)
 	// TODO: (2) Temporary map Fix
 	var m *Map
 	for _, m = range s.maps {
@@ -115,7 +114,7 @@ func (s *Server) SetPort(port string) {
 }
 
 // Spawn spawns new actors on the first map.
-func (s *Server) Spawn(args *Spawn, reply *bool) error {
+func (s *Server) Spawn(args *engine.Spawn, reply *bool) error {
 	// TODO: (2) Temporary map Fix
 	var Map string
 	for Map, _ = range s.maps {

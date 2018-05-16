@@ -1,15 +1,18 @@
 package gorogue
 
 import (
-	"bytes"
+	// "bytes"
 	"fmt"
 	"log"
 	"net"
-	"net/rpc/jsonrpc"
+	// "net/rpc/jsonrpc"
+	"io"
 	"os"
 	"os/signal"
 	"syscall"
 )
+
+var Log *log.Logger
 
 // CatchSignals runs a goroutine that handles POSIX signals.
 // It gets called by NewServer.
@@ -39,25 +42,27 @@ func CatchSignals() {
 // will overwrite the previous connection.
 func NewClient(c Client, host, port string) error {
 	// Disconnect the previous session, if any
-	if stdConn != nil {
-		stdConn.Disconnect()
-		stdConn = nil
-	}
+	// if stdConn != nil {
+	// 	stdConn.Disconnect()
+	// 	stdConn = nil
+	// }
 	stdConn = c
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s%s", host, port))
 	if err != nil {
 		return err
 	}
-	defer stdConn.Disconnect()
+	// defer stdConn.Disconnect()
 
 	var addr []byte = make([]byte, 24)
 	if _, err := conn.Read(addr); err != nil {
 		return err
 	}
 	fmt.Println(string(addr), conn.LocalAddr())
-	stdConn.SetAddr(string(bytes.Trim(addr, "\x00")))
-	stdConn.SetRPC(jsonrpc.NewClient(conn))
-	stdUI = stdConn.Init()
+	// stdConn.SetAddr(string(bytes.Trim(addr, "\x00")))
+	// stdConn.SetRPC(jsonrpc.NewClient(conn))
+	if err := stdConn.Init(); err != nil {
+		panic(err)
+	}
 	stdUI.Run()
 	return nil
 }
@@ -68,4 +73,8 @@ func NewServer(s Server, port string) {
 	CatchSignals()
 	s.SetPort(port)
 	s.HandleRequests()
+}
+
+func SetLog(w io.Writer) {
+	Log = log.New(w, "", log.LstdFlags)
 }

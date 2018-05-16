@@ -4,19 +4,11 @@ package gorogue
 
 import (
 	termbox "github.com/nsf/termbox-go"
-	"net"
-	"net/rpc"
 )
 
 var stdConn Client
 
 var stdUI UI
-
-type Action interface {
-	Args() []interface{}
-	Caller() string
-	Name() string
-}
 
 // Actor is an object that can Move. There are two main kinds of actors:
 // player characters and non-player characters (NPCs). The important
@@ -37,20 +29,18 @@ type Actor interface {
 
 type Client interface {
 	Addr() string
-	Disconnect()
-	Init() UI
-	Ping()
-	HandleAction(a Action) error
-	Maps() map[string]Map
-	Squad() []Actor
+	Init() error
+	HandleAction(a *Action) error
+	Maps() []Map
+	Player() Actor
+	Run()
 	SetAddr(addr string)
-	SetRPC(conn *rpc.Client)
 }
 
 // Conn is the server-side representation of a connection to a client.
 type Conn struct {
-	Conn  *net.Conn // Connection data.
-	Squad []Actor   // Actors this connection has control over.
+	Host   string // Connection data.
+	Player Actor  // Actors this connection has control over.
 }
 
 // Direction represents the cardinal and ordinal directions.
@@ -82,7 +72,7 @@ type Object interface {
 	MarshalJSON() ([]byte, error)
 	Pos() *Pos
 	SetIndex(i int)
-	SetPos(p Pos)
+	SetPos(p *Pos)
 	Sprite() Sprite
 	UnmarshalJSON(data []byte) error
 }
@@ -101,22 +91,28 @@ func (p *Point) Ints() (x, y int) {
 // Pos represents the position of an object.
 type Pos struct {
 	Point
-	Map string
+	Map int
 }
 
-func NewPos(x, y int, Map string) *Pos {
+func NewPos(x, y int, Map int) *Pos {
 	return &Pos{Point{x, y}, Map}
 }
 
 // Ints
-func (p *Pos) Ints() (x, y int, Map string) {
+func (p *Pos) Ints() (x, y, z int) {
 	return p.X, p.Y, p.Map
 }
 
+type RemoteClient interface {
+	Client
+	Connect(host, port string)
+	Disconnect()
+}
+
 type Server interface {
-	Conns() map[string]*Conn
+	World
+	Conns() []string
 	HandleRequests()
-	Maps() map[string]Map
 	// Ping(addr *string, reply *Pong)
 	Port() string
 	SetPort(port string)
@@ -130,11 +126,18 @@ var (
 
 type Tile struct {
 	Sprite
+	Objects []Object
+}
+
+func NewTile(sprite termbox.Cell) Tile {
+	return Tile{
+		Sprite: Sprite(sprite),
+	}
 }
 
 var (
-	EmptyTile Tile = Tile{Sprite(termbox.Cell{' ', termbox.ColorWhite, termbox.ColorBlack})}
-	FloorTile      = Tile{Sprite(termbox.Cell{'.', termbox.ColorWhite, termbox.ColorBlack})}
+	EmptyTile Tile = NewTile(termbox.Cell{' ', termbox.ColorWhite, termbox.ColorBlack})
+	FloorTile      = NewTile(termbox.Cell{'.', termbox.ColorWhite, termbox.ColorBlack})
 )
 
 func (t Tile) Cell() termbox.Cell {
@@ -143,4 +146,9 @@ func (t Tile) Cell() termbox.Cell {
 
 type UI interface {
 	Run()
+}
+
+type World interface {
+	Maps() []Map
+	Players() map[string]Actor
 }

@@ -11,7 +11,7 @@ type Map struct {
 	Name    string // The key that identifies this map in the server.
 	Height  int    // The number of vertical tiles.
 	Width   int    // The number of horizontal tiles.
-	Players Actors
+	Players map[string]engine.Actor
 	Tiles   [][]engine.Tile
 	ticks   int // The number of times this map has called Tick()
 	actions chan int
@@ -30,6 +30,7 @@ func NewMap(w, h int, name string) *Map {
 			m.Tiles[x] = append(m.Tiles[x], engine.FloorTile)
 		}
 	}
+	m.Players = map[string]engine.Actor{}
 	m.actions = make(chan int)
 	m.results = make(chan bool)
 	return m
@@ -41,27 +42,6 @@ func (m *Map) Actors() []engine.Actor {
 		a = append(a, p)
 	}
 	return a
-}
-
-func (m *Map) Remove(a engine.Actor) bool {
-	for i, actor := range m.Players {
-		if actor.Name() == a.Name() {
-			switch {
-			case len(m.Players)-1 == 0:
-				m.Players = []engine.Actor{}
-			case len(m.Players)-1 == i:
-				m.Players = m.Players[:i-1]
-			default:
-				if i == 0 {
-
-					m.Players = append([]engine.Actor{}, m.Players[i:]...)
-				}
-				m.Players = append(m.Players[:i-1], m.Players[i:]...)
-			}
-			return true
-		}
-	}
-	return false
 }
 
 // Tick moves time forward one tick after it has received a valid Action from each
@@ -109,7 +89,7 @@ func (m *Map) TileSlice(Ox, Oy, w, h int) [][]engine.Tile {
 		x, y, _ := a.Pos().Ints()
 		if Ox <= x && x <= x2 &&
 			Oy <= y && y <= y2 {
-			ret[x-Ox][y-Oy] = engine.Tile{a.Sprite()}
+			ret[x-Ox][y-Oy] = engine.Tile{Sprite: a.Sprite()}
 		}
 	}
 	return ret

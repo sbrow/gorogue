@@ -1,11 +1,10 @@
-package gorogue
+package keys
 
 import (
 	"errors"
 	"fmt"
 	termbox "github.com/nsf/termbox-go"
 	. "github.com/sbrow/gorogue"
-	"github.com/sbrow/gorogue/action"
 )
 
 // Keys
@@ -15,7 +14,8 @@ var (
 	Esc       Key = Key{0, termbox.KeyEsc, 0}
 	Tab           = Key{0, termbox.KeyTab, 0}
 	Space         = Key{0, termbox.KeySpace, 0}
-	Backspace     = Key{0, termbox.KeyBackspace, 0}
+	Backspace     = Key{0, termbox.KeyBackspace2, 0}
+	Delete        = Key{0, termbox.KeyDelete, 0}
 	Enter         = Key{0, termbox.KeyEnter, 0}
 )
 
@@ -27,15 +27,15 @@ var Keybinds map[Key]Action
 
 func init() {
 	//Actions
-	quit := action.New("Quit", "Client")
-	moveNorth := action.New("Move", "Client", North)
-	moveNorthEast := action.New("Move", "Client", NorthEast)
-	moveNorthWest := action.New("Move", "Client", NorthWest)
-	moveEast := action.New("Move", "Client", East)
-	moveSouth := action.New("Move", "Client", South)
-	moveSouthEast := action.New("Move", "Client", SouthEast)
-	moveWest := action.New("Move", "Client", West)
-	moveSouthWest := action.New("Move", "Client", SouthWest)
+	quit := *NewAction("Quit", "Client")
+	moveNorth := *NewAction("Move", "Client", North)
+	moveNorthEast := *NewAction("Move", "Client", NorthEast)
+	moveNorthWest := *NewAction("Move", "Client", NorthWest)
+	moveEast := *NewAction("Move", "Client", East)
+	moveSouth := *NewAction("Move", "Client", South)
+	moveSouthEast := *NewAction("Move", "Client", SouthEast)
+	moveWest := *NewAction("Move", "Client", West)
+	moveSouthWest := *NewAction("Move", "Client", SouthWest)
 
 	Keybinds = map[Key]Action{
 		Esc:            quit,
@@ -63,7 +63,7 @@ func BindKey(key Key, Action Action) {
 }
 
 // Input polls the user for a Key, and returns the Action it's mapped to (if any).
-func Input() (Action, error) {
+func Input() (*Action, error) {
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
 		case termbox.EventKey:
@@ -80,9 +80,9 @@ func Input() (Action, error) {
 	return nil, errors.New("Something  went wrong.")
 }
 
-func KeyPressed(key Key) (Action, error) {
+func KeyPressed(key Key) (*Action, error) {
 	if act, ok := Keybinds[key]; ok {
-		return act, nil
+		return &act, nil
 	} else {
 		return nil, &KeyNotBoundError{key}
 	}

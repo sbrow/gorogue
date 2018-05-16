@@ -7,7 +7,6 @@ import (
 	"fmt"
 	termbox "github.com/nsf/termbox-go"
 	engine "github.com/sbrow/gorogue"
-	"github.com/sbrow/gorogue/action"
 	"github.com/sbrow/gorogue/assets"
 	"log"
 	"net/rpc"
@@ -52,7 +51,7 @@ func (c *Client) Disconnect() {
 	log.Println("Disconnected from server.")
 }
 
-func (c *Client) HandleAction(a engine.Action) error {
+func (c *Client) HandleAction(a *engine.Action) error {
 	switch a.Name() {
 	case "Quit":
 		return errors.New("Leaving...")
@@ -80,8 +79,8 @@ func (c *Client) Maps() map[string]engine.Map {
 }
 
 // Move requests that the server move actor a in direction dir.
-func (c *Client) Move(a engine.Action) error {
-	var ma action.Move
+func (c *Client) Move(a *engine.Action) error {
+	var ma engine.Move
 	// TODO: Make converter from Action to *Move
 	var p engine.Pos
 	if a.Name() != "Move" {

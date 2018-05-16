@@ -1,14 +1,13 @@
-package example
+package gorogue
 
 import (
 	"encoding/json"
 	"fmt"
-	engine "github.com/sbrow/gorogue"
 )
 
 // Actors is a wrapper for an array of Actors. It is necessary to
 // Unmarshal objects that implement Actor.
-type Actors []engine.Actor
+type Actors []Actor
 
 // Takes JSON data and reads it into this array.
 func (a *Actors) UnmarshalJSON(data []byte) error {
@@ -33,7 +32,7 @@ func (a *Actors) UnmarshalJSON(data []byte) error {
 		}
 
 		// unmarshal again into the correct type
-		var actual engine.Actor
+		var actual Actor
 		switch Type {
 		case "Player":
 			actual = &Player{}
@@ -49,15 +48,15 @@ func (a *Actors) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (a *Actors) Arr() []engine.Actor {
+func (a *Actors) Arr() []Actor {
 	return *a
 }
 
 type Player struct {
 	name   string
 	index  int
-	pos    *engine.Pos
-	sprite engine.Sprite
+	pos    *Pos
+	sprite Sprite
 }
 
 // NewPlayer creates a new Player using the standard '@' character sprite.
@@ -66,7 +65,7 @@ func NewPlayer(name string) *Player {
 		name:   name,
 		index:  1,
 		pos:    nil,
-		sprite: engine.DefaultPlayer,
+		sprite: DefaultPlayer,
 	}
 }
 
@@ -93,8 +92,8 @@ func (p *Player) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.JSON())
 }
 
-func (p *Player) Move(pos engine.Pos) bool {
-	p.SetPos(pos)
+func (p *Player) Move(pos Pos) bool {
+	p.SetPos(&pos)
 	return true
 }
 
@@ -102,7 +101,7 @@ func (p *Player) Name() string {
 	return p.name
 }
 
-func (p *Player) Pos() *engine.Pos {
+func (p *Player) Pos() *Pos {
 	return p.pos
 }
 
@@ -112,11 +111,11 @@ func (p *Player) SetIndex(i int) {
 	}
 }
 
-func (p *Player) SetPos(pos engine.Pos) {
-	p.pos = &pos
+func (p *Player) SetPos(pos *Pos) {
+	p.pos = pos
 }
 
-func (p *Player) Sprite() engine.Sprite {
+func (p *Player) Sprite() Sprite {
 	return p.sprite
 }
 
@@ -138,7 +137,7 @@ func (p *Player) UnmarshalJSON(data []byte) error {
 type PlayerJSON struct {
 	Name   string
 	Index  int
-	Pos    *engine.Pos
-	Sprite engine.Sprite
+	Pos    *Pos
+	Sprite Sprite
 	Type   string
 }
