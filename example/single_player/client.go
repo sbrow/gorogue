@@ -45,7 +45,7 @@ func (c *Client) HandleAction(a *engine.Action) error {
 }
 
 func (c *Client) Init() error {
-	a := engine.NewAction("Spawn", c.addr, engine.NewPlayer("Player"))
+	a := engine.NewAction("Spawn", c.addr, example.NewPlayer("Player"))
 	if err := c.HandleAction(a); err != nil {
 		log.Println(err)
 	}

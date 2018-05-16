@@ -28,58 +28,58 @@ func CheckErrors(errs ...error) {
 	}
 }
 
-type Client struct {
+type RemoteClient struct {
 	addr   string
 	client *rpc.Client
 	squad  Actors
 	maps   map[string]*Map
 }
 
-func (c *Client) Addr() string {
-	return c.addr
+func (r *RemoteClient) Addr() string {
+	return r.addr
 }
 
-func (c *Client) Disconnect() {
+func (r *RemoteClient) Disconnect() {
 	var reply *string
-	addr := c.Addr()
-	if err := c.client.Call("Server.Disconnect", &addr, &reply); err != nil {
+	addr := r.Addr()
+	if err := r.client.Call("Server.Disconnect", &addr, &reply); err != nil {
 		panic(err)
 	}
-	if err := c.client.Close(); err != nil {
+	if err := r.client.Close(); err != nil {
 		panic(err)
 	}
 	log.Println("Disconnected from server.")
 }
 
-func (c *Client) HandleAction(a *engine.Action) error {
+func (r *RemoteClient) HandleAction(a *engine.Action) error {
 	switch a.Name() {
 	case "Quit":
 		return errors.New("Leaving...")
 	case "Move":
-		return c.Move(a)
+		return r.Move(a)
 	default:
 		return nil
 	}
 	return nil
 }
 
-func (c *Client) Init() engine.UI {
-	c.Spawn(NewPlayer("Player"))
-	c.Ping()
+func (r *RemoteClient) Init() engine.UI {
+	r.Spawn(NewPlayer("Player"))
+	r.Ping()
 	// TODO: (10) active squad member
-	return assets.Fullscreen(c, &c.Squad()[0].Pos().Map)
+	return assets.Fullscreen(r, &r.Squad()[0].Pos().Map)
 }
 
-func (c *Client) Maps() map[string]engine.Map {
+func (r *RemoteClient) Maps() map[string]engine.Map {
 	m := map[string]engine.Map{}
-	for k, v := range c.maps {
+	for k, v := range r.maps {
 		m[k] = v
 	}
 	return m
 }
 
 // Move requests that the server move actor a in direction dir.
-func (c *Client) Move(a *engine.Action) error {
+func (r *RemoteClient) Move(a *engine.Action) error {
 	var ma engine.Move
 	// TODO: Make converter from Action to *Move
 	var p engine.Pos
@@ -88,7 +88,7 @@ func (c *Client) Move(a *engine.Action) error {
 		return nil
 	}
 	if a.Caller() == "Client" {
-		caller := c.Squad()[0] // TODO: (8) Implement active squad member.
+		caller := r.Squad()[0] // TODO: (8) Implement active squad member.
 		ma.Caller = caller.Name()
 		p = *caller.Pos()
 	}
@@ -117,41 +117,41 @@ func (c *Client) Move(a *engine.Action) error {
 	ma.Pos = p
 
 	var reply *string
-	err := c.client.Call("Server.Move", ma, &reply)
+	err := r.client.Call("Server.Move", ma, &reply)
 	CheckErrors(err)
 	return nil
 }
 
 // Ping asks the server for all information relevant to the client.
-func (c *Client) Ping() {
+func (r *RemoteClient) Ping() {
 	var reply *Pong
-	err := c.client.Call("Server.Ping", c.Addr(), &reply)
+	err := r.client.Call("Server.Ping", r.Addr(), &reply)
 	CheckErrors(err)
-	c.maps = reply.Maps
-	c.squad = reply.Squad
+	r.maps = reply.Maps
+	r.squad = reply.Squad
 }
 
-func (c *Client) SetAddr(addr string) {
-	c.addr = addr
+func (r *RemoteClient) SetAddr(addr string) {
+	r.addr = addr
 }
 
-func (c *Client) SetRPC(conn *rpc.Client) {
-	c.client = conn
+func (r *RemoteClient) SetRPC(conn *rpc.Client) {
+	r.client = conn
 }
 
 // Spawn requests that the server spawn actors.
 // The server determines where to spawn them and returns the map
 // where they spawned.
-func (c *Client) Spawn(a ...engine.Actor) {
+func (r *RemoteClient) Spawn(a ...engine.Actor) {
 	args := &Spawn{
-		Caller: c.Addr(),
+		Caller: r.Addr(),
 		Actors: a,
 	}
 	var reply *bool
-	err := c.client.Call("Server.Spawn", args, &reply)
+	err := r.client.Call("Server.Spawn", args, &reply)
 	CheckErrors(err)
 }
 
-func (c *Client) Squad() []engine.Actor {
-	return c.squad
+func (r *RemoteClient) Squad() []engine.Actor {
+	return r.squad
 }

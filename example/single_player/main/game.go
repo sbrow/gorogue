@@ -4,17 +4,14 @@ import (
 	engine "github.com/sbrow/gorogue"
 	"github.com/sbrow/gorogue/example"
 	. "github.com/sbrow/gorogue/example/single_player"
-	"log"
-	"os"
 )
 
 func main() {
-	f, err := os.Create("game.log")
+	f, err := engine.SetLog("local_game")
 	if err != nil {
-		log.Panic("Shit.")
+		panic(err)
 	}
 	defer f.Close()
-	engine.SetLog(f)
 
 	m := example.NewMap(15, 24, "Map_1")
 	w := example.NewWorld(m)

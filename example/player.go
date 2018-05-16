@@ -1,62 +1,16 @@
-package gorogue
+package example
 
 import (
 	"encoding/json"
 	"fmt"
+	engine "github.com/sbrow/gorogue"
 )
-
-// Actors is a wrapper for an array of Actors. It is necessary to
-// Unmarshal objects that implement Actor.
-type Actors []Actor
-
-// Takes JSON data and reads it into this array.
-func (a *Actors) UnmarshalJSON(data []byte) error {
-	// this just splits up the JSON array into the raw JSON for each object
-	var raw []json.RawMessage
-	err := json.Unmarshal(data, &raw)
-	if err != nil {
-		return err
-	}
-
-	for _, r := range raw {
-		// unamrshal into a map to check the "type" field
-		var obj map[string]interface{}
-		err := json.Unmarshal(r, &obj)
-		if err != nil {
-			return err
-		}
-
-		Type := ""
-		if t, ok := obj["Type"].(string); ok {
-			Type = t
-		}
-
-		// unmarshal again into the correct type
-		var actual Actor
-		switch Type {
-		case "Player":
-			actual = &Player{}
-		}
-
-		err = json.Unmarshal(r, actual)
-		if err != nil {
-			return err
-		}
-		*a = append(*a, actual)
-
-	}
-	return nil
-}
-
-func (a *Actors) Arr() []Actor {
-	return *a
-}
 
 type Player struct {
 	name   string
 	index  int
-	pos    *Pos
-	sprite Sprite
+	pos    *engine.Pos
+	sprite engine.Sprite
 }
 
 // NewPlayer creates a new Player using the standard '@' character sprite.
@@ -65,7 +19,7 @@ func NewPlayer(name string) *Player {
 		name:   name,
 		index:  1,
 		pos:    nil,
-		sprite: DefaultPlayer,
+		sprite: engine.DefaultPlayer,
 	}
 }
 
@@ -92,7 +46,7 @@ func (p *Player) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.JSON())
 }
 
-func (p *Player) Move(pos Pos) bool {
+func (p *Player) Move(pos engine.Pos) bool {
 	p.SetPos(&pos)
 	return true
 }
@@ -101,7 +55,7 @@ func (p *Player) Name() string {
 	return p.name
 }
 
-func (p *Player) Pos() *Pos {
+func (p *Player) Pos() *engine.Pos {
 	return p.pos
 }
 
@@ -111,11 +65,11 @@ func (p *Player) SetIndex(i int) {
 	}
 }
 
-func (p *Player) SetPos(pos *Pos) {
+func (p *Player) SetPos(pos *engine.Pos) {
 	p.pos = pos
 }
 
-func (p *Player) Sprite() Sprite {
+func (p *Player) Sprite() engine.Sprite {
 	return p.sprite
 }
 
@@ -137,7 +91,7 @@ func (p *Player) UnmarshalJSON(data []byte) error {
 type PlayerJSON struct {
 	Name   string
 	Index  int
-	Pos    *Pos
-	Sprite Sprite
+	Pos    *engine.Pos
+	Sprite engine.Sprite
 	Type   string
 }

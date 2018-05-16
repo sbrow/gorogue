@@ -1,80 +1,73 @@
 package gorogue
 
 import (
-	// "bytes"
+	"bytes"
+	"errors"
 	"fmt"
 	"log"
 	"net"
-	// "net/rpc/jsonrpc"
-	"io"
+	"net/rpc/jsonrpc"
 	"os"
-	"os/signal"
-	"syscall"
+	"path/filepath"
+	"runtime"
 )
 
 var Log *log.Logger
 
-// CatchSignals runs a goroutine that handles POSIX signals.
-// It gets called by NewServer.
-func CatchSignals() {
-	c := make(chan os.Signal, 2)
-	signal.Notify(c)
-	go func() {
-		for sig := range c {
-			log.Println(sig)
-			switch sig {
-			case syscall.SIGTERM:
-				fallthrough
-			case syscall.SIGKILL:
-				fallthrough
-			case syscall.SIGINT:
-				log.Println("Exiting...")
-				os.Exit(1)
-			}
-		}
-	}()
-}
+var stdConn Client
 
-// NewClient initializes a connection to a server. NewClient must be called to
+// NewRemoteClient initializes a Client connection to a server. NewClient must be called to
 // connect to an online game, but can be ignored if using a local model.
 //
 // Each process can connect to only one server, meaning each call to NewClient
 // will overwrite the previous connection.
-func NewClient(c Client, host, port string) error {
+func NewRemoteClient(c RemoteClient, host, port string) error {
 	// Disconnect the previous session, if any
-	// if stdConn != nil {
-	// 	stdConn.Disconnect()
-	// 	stdConn = nil
-	// }
-	stdConn = c
+	if stdConn != nil {
+		switch stdConn.(type) {
+		case RemoteClient:
+			stdConn.(RemoteClient).Disconnect()
+		}
+		stdConn = nil
+	}
+	remoteConn := stdConn.(RemoteClient)
+	remoteConn = c
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s%s", host, port))
 	if err != nil {
 		return err
 	}
-	// defer stdConn.Disconnect()
+	defer remoteConn.Disconnect()
 
 	var addr []byte = make([]byte, 24)
 	if _, err := conn.Read(addr); err != nil {
 		return err
 	}
 	fmt.Println(string(addr), conn.LocalAddr())
-	// stdConn.SetAddr(string(bytes.Trim(addr, "\x00")))
-	// stdConn.SetRPC(jsonrpc.NewClient(conn))
-	if err := stdConn.Init(); err != nil {
+	remoteConn.SetAddr(string(bytes.Trim(addr, "\x00")))
+	remoteConn.SetRPC(jsonrpc.NewClient(conn))
+	if err := remoteConn.Init(); err != nil {
 		panic(err)
 	}
-	stdUI.Run()
+	remoteConn.Run()
 	return nil
 }
 
 // NewServer starts a server on the given port. Servers are used to control
 // the World in an online game.
 func NewServer(s Server, port string) {
-	CatchSignals()
 	s.SetPort(port)
 	s.HandleRequests()
 }
 
-func SetLog(w io.Writer) {
-	Log = log.New(w, "", log.LstdFlags)
+func SetLog(name string) (*os.File, error) {
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return nil, errors.New("Something went wrong.")
+	}
+	f, err := os.Create(filepath.Join(filepath.Dir(filename), name+".log"))
+	if err != nil {
+		return nil, err
+	}
+	Log = log.New(f, "", log.LstdFlags)
+	return f, nil
 }

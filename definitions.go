@@ -4,11 +4,8 @@ package gorogue
 
 import (
 	termbox "github.com/nsf/termbox-go"
+	"net/rpc"
 )
-
-var stdConn Client
-
-var stdUI UI
 
 // Actor is an object that can Move. There are two main kinds of actors:
 // player characters and non-player characters (NPCs). The important
@@ -107,6 +104,7 @@ type RemoteClient interface {
 	Client
 	Connect(host, port string)
 	Disconnect()
+	SetRPC(*rpc.Client)
 }
 
 type Server interface {
