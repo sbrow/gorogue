@@ -16,11 +16,21 @@ var Log *log.Logger
 
 var stdConn Client
 
-// NewRemoteClient initializes a Client connection to a server. NewClient must be called to
-// connect to an online game, but can be ignored if using a local model.
+// TODO: Document
+func NewClient(c Client, w World) {
+	c.SetWorld(w)
+	c.Init()
+	c.Run()
+}
+
+// NewRemoteClient initializes a Client connection to a server.
+// NewRemoteClient must be called in order to connect to an online game.
+// For local games, use NewClient instead.
 //
-// Each process can connect to only one server, meaning each call to NewClient
-// will overwrite the previous connection.
+// Each process can have only one active Client, meaning each call to NewRemoteClient
+// or NewClient will overwrite the previous client.
+//
+// TODO: Implement NewClient
 func NewRemoteClient(c RemoteClient, host, port string) error {
 	// Disconnect the previous session, if any
 	if stdConn != nil {

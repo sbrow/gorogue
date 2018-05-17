@@ -1,5 +1,23 @@
 // Package gorogue is a flexible roguelike engine written in Go.
 // Gorogue aims to be small, versatile, and modular.
+//
+// Game Modes
+//
+// One of this project's goals is to support a wide variety of game modes. However,
+// emphasis is first placed on the stability and thorough documentation of the existing
+// modes.
+//
+// Currently, there are two game modes: online and local. Both support one Action per
+// Actor per tick.
+//
+// Planned modes include:
+// 	- "Realtime": 30 ticks per second, Actors that don't act in time are skipped.
+// 	- "Squad Based": Allows each player to control more than one Actor."
+// 	- "Action Points": Characters spend AP to perform actions, AP refreshes each tick.
+//
+// Online Mode
+//
+// In online mode, RemoteClients connect to a Server.
 package gorogue
 
 import (
@@ -7,43 +25,57 @@ import (
 	"net/rpc"
 )
 
-// Actor is an object that can Move. There are two main kinds of actors:
+// Actor is an object that can move. There are two main kinds of actors:
 // player characters and non-player characters (NPCs). The important
-// distinction being that NPCs are controlled by the server, and Player
-// characters are controlled by clients.
-//
-// Each NPC gets their own goroutine, meaning each acts on their own thread,
-// separate from other actors. The server receives requests to act from each NPC,
-// and determines whether that action is valid. If if isn't, the action is rejected
-// and the Actor must choose a different action to perform. If the action is valid,
-// it gets stored in in a buffer and is called during the next Map.Tick().
-//
-// TODO: This description is only valid for the client-server version.
+// distinction being that NPCs are controlled by the World, and player
+// characters are controlled by Clients.
 type Actor interface {
-	Object             // The Object interface.
+	Object             // All Actors are Objects.
 	Move(pos Pos) bool // Moves the Actor to the given position.
 }
 
+// Client represents a connection to a local World.
 type Client interface {
+	// Addr returns a string representation of the Client's host/port.
+	// Defaults to "[::1]" for local Clients.
 	Addr() string
+
+	// Init sets up the Client, generally handling spawning the player(s)
+	// and setting up the UI.
 	Init() error
+
+	// HandleAction sends an Action received received from Input(), Command strings, etc
+	// and sends it to the World to be evaluated.
+	//
+	// Failed/Illegal Actions will return an error, and generally require that another
+	// Action be selected instead.
 	HandleAction(a *Action) error
+
+	// Maps pulls all the Maps from the World and returns them.
 	Maps() []Map
+
+	// Player returns the Actor that this Client is in control of.
 	Player() Actor
+
+	// Run starts the UI.
 	Run()
+
+	// TODO: Document.
+	SetWorld(w World)
 }
 
 // Conn is the server-side representation of a connection to a client.
-type Conn struct {
+/*type Conn struct {
 	Host   string // Connection data.
 	Player Actor  // Actors this connection has control over.
 }
+*/
 
 // Direction represents the cardinal and ordinal directions.
 // North points towards the top of the screen, east points to the right, etc.
 //
 // Converting between coordinates and Directions is often done with Bitwise operations,
-// hence why they are not laid out in perfect sequence.r
+// hence why they are not laid out in perfect sequence.
 type Direction uint8
 
 const (
@@ -57,8 +89,15 @@ const (
 	SouthWest Direction = 12       // 1100
 )
 
+// FIXME: Map is currently under development.
 type Map interface {
+	// Height() int
+	// Players() []Actor
+	// Tick()r
+	// Tiles() [][] Tile
+
 	TileSlice(x1, x2, w, h int) [][]Tile
+	// Width() int
 }
 
 type Object interface {
@@ -74,6 +113,8 @@ type Object interface {
 }
 
 // Point represents a coordinate pair.
+//
+// Points are most commonly used to locate Tiles on a Map and Cells in termbox.
 type Point struct {
 	X int
 	Y int
@@ -84,21 +125,23 @@ func (p *Point) Ints() (x, y int) {
 	return p.X, p.Y
 }
 
-// Pos represents the position of an object.
+// Pos represents the position of an Object in the World. Point holds their location
+// in the Map, and Map holds the index of theirr Map in World.Maps.
 type Pos struct {
 	Point
 	Map int
 }
 
-func NewPos(x, y int, Map int) *Pos {
+func NewPos(x, y, Map int) *Pos {
 	return &Pos{Point{x, y}, Map}
 }
 
-// Ints
+// Ints returns the position as an ordered triple.
 func (p *Pos) Ints() (x, y, z int) {
 	return p.X, p.Y, p.Map
 }
 
+// TODO: Document
 type RemoteClient interface {
 	Client
 	Connect(host, port string)
@@ -107,6 +150,17 @@ type RemoteClient interface {
 	SetRPC(*rpc.Client)
 }
 
+// Server is a world that accepts RemoteClient connections over TCP/IP.
+//
+// Actions are sent from RemoteClients to the Server via JSON RPC.
+// This means that every Server method you wish RemoteClients to have access to
+// must follow these criteria:
+//	- the method's type is exported.
+//	- the method is exported.
+//	- the method has two arguments, both exported (or builtin) types.
+// 	- the method's second argument is a pointer.
+//	- the method has return type error.
+// See the net/rpc package for more details.
 type Server interface {
 	World
 	Conns() []string

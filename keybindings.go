@@ -1,10 +1,8 @@
-package keys
+package gorogue
 
 import (
-	"errors"
 	"fmt"
 	termbox "github.com/nsf/termbox-go"
-	. "github.com/sbrow/gorogue"
 )
 
 // Keys
@@ -62,7 +60,8 @@ func BindKey(key Key, Action Action) {
 	Keybinds[key] = Action
 }
 
-// Input polls the user for a Key, and returns the Action it's mapped to (if any).
+// Input polls the user for a Key, and returns the Action it's mapped to or nil
+// if the key isn't mapped.
 func Input() (*Action, error) {
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
@@ -77,9 +76,11 @@ func Input() (*Action, error) {
 			return KeyPressed(*key)
 		}
 	}
-	return nil, errors.New("Something  went wrong.")
+	return nil, nil
 }
 
+// KeyPressed checks to see what action the given key is bound to.
+// It returns a KeyNotBoundError if the key is unbound.
 func KeyPressed(key Key) (*Action, error) {
 	if act, ok := Keybinds[key]; ok {
 		return &act, nil
@@ -89,10 +90,11 @@ func KeyPressed(key Key) (*Action, error) {
 
 }
 
-// Command is a string mapped to an Action. Commands are  intended to be called
-// in a Vi style command bar.
+// Command is an alternate way to call an action. If a player forgets the keyboard
+// shortcut for an Action, they can instead bring up the command bar with ':'
+// and type in the command string for the action.
 //
-// TODO: (7) Implement Vi command bar.
+// TODO: (7) Implement command bar.
 type Command string
 
 // Key is a keyboard key mapped to an Action. See package github.com/nsf/termbox-go
@@ -103,6 +105,8 @@ type Key struct {
 	Ch  rune             // a unicode character.
 }
 
+// KeyNotBoundError is returned when a key is looked up, but it not currently
+// bound to an action.
 type KeyNotBoundError struct {
 	K Key
 }

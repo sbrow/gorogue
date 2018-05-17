@@ -15,12 +15,6 @@ type Client struct {
 	world *example.World
 }
 
-func NewClient(w engine.World) *Client {
-	return &Client{
-		world: w.(*example.World),
-	}
-}
-
 func (c *Client) Addr() string {
 	return "[::1]"
 }
@@ -64,4 +58,8 @@ func (c *Client) Run() {
 }
 func (c *Client) Player() engine.Actor {
 	return c.world.Players()[c.Addr()]
+}
+
+func (c *Client) SetWorld(w engine.World) {
+	c.world = w.(*example.World)
 }

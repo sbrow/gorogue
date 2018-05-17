@@ -1,14 +1,15 @@
-package main
+package gorogue_test
 
 import (
-	engine "github.com/sbrow/gorogue"
+	"fmt"
+	"github.com/sbrow/gorogue"
 	"github.com/sbrow/gorogue/example"
 	"github.com/sbrow/gorogue/example/single_player"
 )
 
-func main() {
+func Example_localGame() {
 	// Set up our log
-	f, err := engine.SetLog("local_game")
+	f, err := gorogue.SetLog("local_game")
 	if err != nil {
 		panic(err)
 	}
@@ -21,5 +22,5 @@ func main() {
 	w := example.NewWorld(m)
 
 	// Run the Client
-	engine.NewClient(&single_player.Client{}, w)
+	gorogue.NewClient(&single_player.Client{}, w)
 }

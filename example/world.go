@@ -24,7 +24,7 @@ func (w *World) HandleAction(a *engine.Action, reply *string) error {
 	case "Move":
 		err = w.Move(a)
 	case "Spawn":
-		sa := &engine.Spawn{}
+		sa := &engine.SpawnAction{}
 		sa.Caller = a.Caller
 		sa.Actor = a.Args[0].(engine.Actor)
 		err = w.Spawn(sa)
@@ -44,7 +44,7 @@ func (w *World) Maps() []engine.Map {
 }
 
 func (w *World) Move(a *engine.Action) error {
-	var ma engine.Move
+	var ma engine.MoveAction
 	// TODO: Make converter from Action to *Move
 	var p engine.Pos
 	if a.Name != "Move" {
@@ -86,7 +86,7 @@ func (w *World) Players() map[string]engine.Actor {
 	return w.players
 }
 
-func (w *World) Spawn(s *engine.Spawn) error {
+func (w *World) Spawn(s *engine.SpawnAction) error {
 	//
 	m := rand.Intn(len(w.maps))
 	//

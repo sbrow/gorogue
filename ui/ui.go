@@ -3,7 +3,6 @@ package ui
 import (
 	termbox "github.com/nsf/termbox-go"
 	engine "github.com/sbrow/gorogue"
-	keys "github.com/sbrow/gorogue/keys"
 )
 
 // Bounds hold the top left-most and bottom right-most points of a UIElement
@@ -99,7 +98,7 @@ func (u *UI) Run() {
 
 	for {
 		u.Draw()
-		action, err := keys.Input()
+		action, err := engine.Input()
 		if err != nil { //&& err.Error() != KeyNotBoundError { TODO: fix
 			// panic(err)
 		}
