@@ -31,7 +31,6 @@ type Client interface {
 	Maps() []Map
 	Player() Actor
 	Run()
-	SetAddr(addr string)
 }
 
 // Conn is the server-side representation of a connection to a client.
@@ -104,6 +103,7 @@ type RemoteClient interface {
 	Client
 	Connect(host, port string)
 	Disconnect()
+	SetAddr(addr string)
 	SetRPC(*rpc.Client)
 }
 

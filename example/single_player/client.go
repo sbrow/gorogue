@@ -11,20 +11,18 @@ import (
 )
 
 type Client struct {
-	world *example.World
 	ui    engine.UI
-	addr  string
+	world *example.World
 }
 
 func NewClient(w engine.World) *Client {
 	return &Client{
-		addr:  "[::1]",
 		world: w.(*example.World),
 	}
 }
 
 func (c *Client) Addr() string {
-	return c.addr
+	return "[::1]"
 }
 
 func (c *Client) HandleAction(a *engine.Action) error {
@@ -34,7 +32,7 @@ func (c *Client) HandleAction(a *engine.Action) error {
 		return errors.New("Leaving...")
 	default:
 		if a.Caller == "Client" {
-			a.Caller = c.addr
+			a.Caller = c.Addr()
 		}
 		c.world.HandleAction(a, reply)
 	}
@@ -45,7 +43,7 @@ func (c *Client) HandleAction(a *engine.Action) error {
 }
 
 func (c *Client) Init() error {
-	a := engine.NewAction("Spawn", c.addr, example.NewPlayer("Player"))
+	a := engine.NewAction("Spawn", c.Addr(), example.NewPlayer("Player"))
 	if err := c.HandleAction(a); err != nil {
 		log.Println(err)
 	}
@@ -65,9 +63,5 @@ func (c *Client) Run() {
 	c.ui.Run()
 }
 func (c *Client) Player() engine.Actor {
-	return c.world.Players()[c.addr]
-}
-
-func (c *Client) SetAddr(addr string) {
-	c.addr = addr
+	return c.world.Players()[c.Addr()]
 }
