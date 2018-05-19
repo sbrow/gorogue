@@ -5,18 +5,6 @@ import (
 	termbox "github.com/nsf/termbox-go"
 )
 
-// Keys
-//
-// TODO: finish adding.
-var (
-	Esc       Key = Key{0, termbox.KeyEsc, 0}
-	Tab           = Key{0, termbox.KeyTab, 0}
-	Space         = Key{0, termbox.KeySpace, 0}
-	Backspace     = Key{0, termbox.KeyBackspace2, 0}
-	Delete        = Key{0, termbox.KeyDelete, 0}
-	Enter         = Key{0, termbox.KeyEnter, 0}
-)
-
 // Commands stores all currently bound commands.
 var Commands map[Command]Action
 
@@ -104,6 +92,18 @@ type Key struct {
 	Key termbox.Key      // One of termbox.Key* constants, invalid if 'Ch' is not 0.
 	Ch  rune             // a unicode character.
 }
+
+// Key
+//
+// TODO: finish adding.
+var (
+	Esc Key = Key{0, termbox.KeyEsc, 0}
+	// Tab           = Key{0, termbox.KeyTab, 0}
+	// Space         = Key{0, termbox.KeySpace, 0}
+	// Backspace     = Key{0, termbox.KeyBackspace2, 0}
+	// Delete        = Key{0, termbox.KeyDelete, 0}
+	// Enter         = Key{0, termbox.KeyEnter, 0}
+)
 
 // KeyNotBoundError is returned when a key is looked up, but it not currently
 // bound to an action.

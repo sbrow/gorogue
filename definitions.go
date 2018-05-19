@@ -11,8 +11,8 @@
 // Actor per tick.
 //
 // Planned modes include:
-// 	- "Realtime": 30 ticks per second, Actors that don't act in time are skipped.
-// 	- "Squad Based": Allows each player to control more than one Actor."
+// 	- "Realtime"	 : 30 ticks per second, Actors that don't act in time are skipped.
+// 	- "Squad Based"	 : Allows each player to control more than one Actor."
 // 	- "Action Points": Characters spend AP to perform actions, AP refreshes each tick.
 //
 // Online Mode
@@ -21,6 +21,7 @@
 package gorogue
 
 import (
+	"fmt"
 	termbox "github.com/nsf/termbox-go"
 	"net/rpc"
 )
@@ -52,16 +53,13 @@ type Client interface {
 	HandleAction(a *Action) error
 
 	// Maps pulls all the Maps from the World and returns them.
-	Maps() []Map
+	// Maps() []Map
 
 	// Player returns the Actor that this Client is in control of.
 	Player() Actor
 
 	// Run starts the UI.
 	Run()
-
-	// TODO: Document.
-	SetWorld(w World)
 }
 
 // Conn is the server-side representation of a connection to a client.
@@ -89,17 +87,6 @@ const (
 	SouthWest Direction = 12       // 1100
 )
 
-// FIXME: Map is currently under development.
-type Map interface {
-	// Height() int
-	// Players() []Actor
-	// Tick()r
-	// Tiles() [][] Tile
-
-	TileSlice(x1, x2, w, h int) [][]Tile
-	// Width() int
-}
-
 type Object interface {
 	Name() string
 	ID() string
@@ -120,25 +107,29 @@ type Point struct {
 	Y int
 }
 
+func (p *Point) String() string {
+	return fmt.Sprintf("(%d %d)", p.X, p.Y)
+}
+
 // Ints returns the point as a pair of ints.
 func (p *Point) Ints() (x, y int) {
 	return p.X, p.Y
 }
 
 // Pos represents the position of an Object in the World. Point holds their location
-// in the Map, and Map holds the index of theirr Map in World.Maps.
+// in the Map, and Map holds the index of their Map in World.Maps.
 type Pos struct {
 	Point
-	Map int
+	Map uint8
 }
 
 func NewPos(x, y, Map int) *Pos {
-	return &Pos{Point{x, y}, Map}
+	return &Pos{Point{x, y}, uint8(Map)}
 }
 
 // Ints returns the position as an ordered triple.
 func (p *Pos) Ints() (x, y, z int) {
-	return p.X, p.Y, p.Map
+	return p.X, p.Y, int(p.Map)
 }
 
 // TODO: Document
@@ -162,8 +153,9 @@ type RemoteClient interface {
 //	- the method has return type error.
 // See the net/rpc package for more details.
 type Server interface {
-	World
+	// World
 	Conns() []string
+	HandleAction(a *Action, reply *string) error
 	HandleRequests()
 	// Ping(addr *string, reply *Pong)
 	Port() string
@@ -171,10 +163,6 @@ type Server interface {
 }
 
 type Sprite termbox.Cell
-
-var (
-	DefaultPlayer Sprite = Sprite(termbox.Cell{'@', termbox.ColorWhite, termbox.ColorBlack})
-)
 
 type Tile struct {
 	Sprite
@@ -187,11 +175,6 @@ func NewTile(sprite termbox.Cell) Tile {
 	}
 }
 
-var (
-	EmptyTile Tile = NewTile(termbox.Cell{' ', termbox.ColorWhite, termbox.ColorBlack})
-	FloorTile      = NewTile(termbox.Cell{'.', termbox.ColorWhite, termbox.ColorBlack})
-)
-
 func (t Tile) Cell() termbox.Cell {
 	return termbox.Cell(t.Sprite)
 }
@@ -200,7 +183,7 @@ type UI interface {
 	Run()
 }
 
-type World interface {
-	Maps() []Map
-	Players() map[string]Actor
-}
+// type World interface {
+// 	Maps() []Map
+// 	Players() map[string]Actor
+// }

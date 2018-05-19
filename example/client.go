@@ -1,18 +1,17 @@
 // Package client handles drawing the UI, interfacing with the player,
 // and talking to the server.
-package single_player
+package example
 
 import (
 	"errors"
 	engine "github.com/sbrow/gorogue"
-	"github.com/sbrow/gorogue/assets"
-	"github.com/sbrow/gorogue/example"
+	"github.com/sbrow/gorogue/ui"
 	"log"
 )
 
 type Client struct {
 	ui    engine.UI
-	world *example.World
+	world *engine.World
 }
 
 func (c *Client) Addr() string {
@@ -37,20 +36,18 @@ func (c *Client) HandleAction(a *engine.Action) error {
 }
 
 func (c *Client) Init() error {
-	a := engine.NewAction("Spawn", c.Addr(), example.NewPlayer("Player"))
+	// Create a new Map.
+	m := engine.NewMap(5, 5, "Map_1")
+
+	// Add it to our world.
+	c.world = engine.NewWorld(m)
+
+	a := engine.NewAction("Spawn", c.Addr(), engine.NewPlayer("Player"))
 	if err := c.HandleAction(a); err != nil {
 		log.Println(err)
 	}
-	c.ui = assets.Fullscreen(c, c.world.Maps()[0])
+	c.ui = ui.Fullscreen(c, c.world.Maps()[0])
 	return nil
-}
-
-func (c *Client) Maps() []engine.Map {
-	var maps []engine.Map
-	for i, m := range c.world.Maps() {
-		maps[i] = m
-	}
-	return maps
 }
 
 func (c *Client) Run() {
@@ -58,8 +55,4 @@ func (c *Client) Run() {
 }
 func (c *Client) Player() engine.Actor {
 	return c.world.Players()[c.Addr()]
-}
-
-func (c *Client) SetWorld(w engine.World) {
-	c.world = w.(*example.World)
 }

@@ -1,18 +1,19 @@
-package example
+package gorogue
 
 import (
-	engine "github.com/sbrow/gorogue"
+	"errors"
 	"log"
 )
 
-// Map is a 2 dimensional plane containing tiles, objects and Actors. Each map will continue
+// Map is a 2 dime:nsional plane containing tiles, objects and Actors. Each map will continue
 // to Tick, so long as it has at least one active connection.
 type Map struct {
 	Name    string // The key that identifies this map in the server.
-	Height  int    // The number of vertical tiles.
-	Width   int    // The number of horizontal tiles.
-	Players map[string]engine.Actor
-	Tiles   [][]engine.Tile
+	ID      uint8
+	Height  int // The number of vertical tiles.
+	Width   int // The number of horizontal tiles.
+	Players map[string]Actor
+	Tiles   [][]Tile
 	ticks   int // The number of times this map has called Tick()
 	actions chan int
 	results chan bool
@@ -25,23 +26,49 @@ func NewMap(w, h int, name string) *Map {
 	m.Height = h
 	m.Name = name
 	for x := 0; x < w; x++ {
-		m.Tiles = append(m.Tiles, []engine.Tile{})
+		m.Tiles = append(m.Tiles, []Tile{})
 		for y := 0; y < h; y++ {
-			m.Tiles[x] = append(m.Tiles[x], engine.FloorTile)
+			m.Tiles[x] = append(m.Tiles[x], FloorTile)
 		}
 	}
-	m.Players = map[string]engine.Actor{}
+	m.Players = map[string]Actor{}
 	m.actions = make(chan int)
 	m.results = make(chan bool)
 	return m
 }
 
-func (m *Map) Actors() []engine.Actor {
-	a := []engine.Actor{}
+func (m *Map) Actors() []Actor {
+	a := []Actor{}
 	for _, p := range m.Players {
 		a = append(a, p)
 	}
 	return a
+}
+
+// AllTiles returns all of the map's tiles. It is congruent with
+// calling TileSlice(0, 0, Map.Width, Map.Height)
+func (m *Map) AllTiles() [][]Tile {
+	w, h := m.Width, m.Height
+	return m.TileSlice(0, 0, w, h)
+}
+
+func (m *Map) Move(a MoveAction) error {
+	actor := a.Target.(Actor)
+
+	// Assert that the Pos points to this Map.
+	if a.Pos.Map != m.ID {
+		return errors.New("Pointing to the wrong map.")
+	}
+
+	// Assert that the Pos is within the bounds of the Map.
+	if a.Pos.X >= m.Width || a.Pos.Y >= m.Height ||
+		a.Pos.X < 0 || a.Pos.Y < 0 {
+		return errors.New("Can't move outside the map.")
+	}
+
+	// If all our assertions are correct, move the Actor.
+	actor.SetPos(&a.Pos)
+	return nil
 }
 
 // Tick moves time forward one tick after it has received a valid Action from each
@@ -64,8 +91,8 @@ func (m *Map) Tick() {
 
 // TileSlice returns the contents of all tiles within the bounds of
 // [(x1, y1), (x2, y2)]
-func (m *Map) TileSlice(Ox, Oy, w, h int) [][]engine.Tile {
-	ret := [][]engine.Tile{}
+func (m *Map) TileSlice(Ox, Oy, w, h int) [][]Tile {
+	ret := [][]Tile{}
 	x2, y2 := w, h
 	if w > m.Width-1 {
 		x2 = m.Width - 1
@@ -77,7 +104,7 @@ func (m *Map) TileSlice(Ox, Oy, w, h int) [][]engine.Tile {
 	// Draw Tiles
 	i := 0
 	for x := Ox; x <= x2; x++ {
-		ret = append(ret, []engine.Tile{})
+		ret = append(ret, []Tile{})
 		for y := Oy; y <= y2; y++ {
 			ret[i] = append(ret[i], m.Tiles[x][y])
 		}
@@ -89,17 +116,10 @@ func (m *Map) TileSlice(Ox, Oy, w, h int) [][]engine.Tile {
 		x, y, _ := a.Pos().Ints()
 		if Ox <= x && x <= x2 &&
 			Oy <= y && y <= y2 {
-			ret[x-Ox][y-Oy] = engine.Tile{Sprite: a.Sprite()}
+			ret[x-Ox][y-Oy] = Tile{Sprite: a.Sprite()}
 		}
 	}
 	return ret
-}
-
-// AllTiles returns all of the map's tiles. It is congruent with
-// calling TileSlice(0, 0, Map.Width, Map.Height)
-func (m *Map) AllTiles() [][]engine.Tile {
-	w, h := m.Width, m.Height
-	return m.TileSlice(0, 0, w, h)
 }
 
 // WaitForTurn blocks an actor until Tick gives them priority.

@@ -1,16 +1,15 @@
-package example
+package gorogue
 
 import (
 	"encoding/json"
 	"fmt"
-	engine "github.com/sbrow/gorogue"
 )
 
 type Player struct {
 	name   string
 	index  int
-	pos    *engine.Pos
-	sprite engine.Sprite
+	pos    *Pos
+	sprite Sprite
 }
 
 // NewPlayer creates a new Player using the standard '@' character sprite.
@@ -19,7 +18,7 @@ func NewPlayer(name string) *Player {
 		name:   name,
 		index:  1,
 		pos:    nil,
-		sprite: engine.DefaultPlayer,
+		sprite: DefaultPlayer,
 	}
 }
 
@@ -46,7 +45,7 @@ func (p *Player) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.JSON())
 }
 
-func (p *Player) Move(pos engine.Pos) bool {
+func (p *Player) Move(pos Pos) bool {
 	p.SetPos(&pos)
 	return true
 }
@@ -55,7 +54,7 @@ func (p *Player) Name() string {
 	return p.name
 }
 
-func (p *Player) Pos() *engine.Pos {
+func (p *Player) Pos() *Pos {
 	return p.pos
 }
 
@@ -65,11 +64,11 @@ func (p *Player) SetIndex(i int) {
 	}
 }
 
-func (p *Player) SetPos(pos *engine.Pos) {
+func (p *Player) SetPos(pos *Pos) {
 	p.pos = pos
 }
 
-func (p *Player) Sprite() engine.Sprite {
+func (p *Player) Sprite() Sprite {
 	return p.sprite
 }
 
@@ -91,7 +90,7 @@ func (p *Player) UnmarshalJSON(data []byte) error {
 type PlayerJSON struct {
 	Name   string
 	Index  int
-	Pos    *engine.Pos
-	Sprite engine.Sprite
+	Pos    *Pos
+	Sprite Sprite
 	Type   string
 }

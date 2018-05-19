@@ -47,7 +47,7 @@ func (q *QuitAction) Action() *Action {
 	return NewAction("Quit", q.Caller)
 }
 
-// Spawn is used to spawn Objects.
+// SpawnAction is used to spawn Objects.
 type SpawnAction struct {
 	Caller string
 	Actor  Actor // TODO: (8) Change to object rather than Actor.

@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	termbox "github.com/nsf/termbox-go"
 	engine "github.com/sbrow/gorogue"
 )
@@ -8,8 +9,8 @@ import (
 // Bounds hold the top left-most and bottom right-most points of a UIElement
 type Bounds [2]engine.Point
 
-func NewBounds(x, y, w, h int) Bounds {
-	return Bounds{engine.Point{x, y}, engine.Point{w, h}}
+func NewBounds(x1, y1, x2, y2 int) Bounds {
+	return Bounds{engine.Point{x1, y1}, engine.Point{x2, y2}}
 }
 
 func (b *Bounds) Grow() {
@@ -24,6 +25,10 @@ func (b *Bounds) Shrink() {
 	b[0].Y++
 	b[1].X--
 	b[1].Y--
+}
+
+func (b *Bounds) String() string {
+	return fmt.Sprintf("[%s, %s]", b[0].String(), b[1].String())
 }
 
 // UI holds everything a player sees in game.
@@ -63,11 +68,10 @@ func (u *UI) Bounds() Bounds {
 // Views, Border.
 func (u *UI) Draw() error {
 	err := termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
-	termbox.Flush()
 	if err != nil {
 		return err
 	}
-	// u.conn.Ping()
+	termbox.Flush()
 	// Print each view
 	for _, e := range u.Elements {
 		err := e.Draw()
@@ -125,9 +129,9 @@ type UIElement interface {
 	Border() *Border
 	Bounds() Bounds
 	Draw() error
-	SetUI(u engine.UI)
+	SetUI(u *UI)
 	Type() UIElementType
-	UI() engine.UI
+	UI() *UI
 }
 
 // UIElementType is an enum of valid UIElements.

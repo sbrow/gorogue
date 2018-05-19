@@ -29,10 +29,11 @@ func DrawAt(cells [][]termbox.Cell, Ox, Oy int) error {
 // specially and will appear as spaces.
 //
 // DrawRawString returns OutOfScreenBoundryError if the drawing exceeds termbox's size.
-func DrawRawString(Ox, Oy int, fg, bg termbox.Attribute, s string) error {
+func DrawRawString(Ox, Oy int, fg, bg termbox.Attribute, v interface{}) error {
 	defer termbox.Flush()
 	x, y := Ox, Oy
-	for _, r := range s {
+	str := fmt.Sprint(v)
+	for _, r := range str {
 		termbox.SetCell(x, y, r, fg, bg)
 		x++
 	}
@@ -46,10 +47,11 @@ func DrawRawString(Ox, Oy int, fg, bg termbox.Attribute, s string) error {
 // Carriage Return ('\r') runes will move the cursor to the beginning of the current line.
 //
 // DrawString returns OutOfScreenBoundryError if the drawing exceeds termbox's size.
-func DrawString(Ox, Oy int, fg, bg termbox.Attribute, s string) error {
+func DrawString(Ox, Oy int, fg, bg termbox.Attribute, v interface{}) error {
 	defer termbox.Flush()
 	x, y := Ox, Oy
-	for _, r := range s {
+	str := fmt.Sprint(v)
+	for _, r := range str {
 		switch r {
 		case '\n':
 			y++

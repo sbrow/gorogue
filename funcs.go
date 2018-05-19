@@ -12,13 +12,8 @@ import (
 	"runtime"
 )
 
-var Log *log.Logger
-
-var stdConn Client
-
 // TODO: Document
-func NewClient(c Client, w World) {
-	c.SetWorld(w)
+func NewClient(c Client) {
 	c.Init()
 	c.Run()
 }
@@ -29,8 +24,6 @@ func NewClient(c Client, w World) {
 //
 // Each process can have only one active Client, meaning each call to NewRemoteClient
 // or NewClient will overwrite the previous client.
-//
-// TODO: Implement NewClient
 func NewRemoteClient(c RemoteClient, host, port string) error {
 	// Disconnect the previous session, if any
 	if stdConn != nil {

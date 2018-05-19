@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	// termbox "github.com/nsf/termbox-go"
-	// "testing"
+	. "github.com/sbrow/gorogue"
+	"testing"
 )
 
 func JSONTester(obj interface{}, out interface{}) error {
@@ -25,21 +26,14 @@ func JSONTester(obj interface{}, out interface{}) error {
 	return nil
 }
 
-/*
 func TestPlayerJSON(t *testing.T) {
-	err := JSONTester(NewPlayer("PlayerOne", 1), &Player{})
+	err := JSONTester(NewPlayer("PlayerOne"), &Player{})
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-func TestActorsJSON(t *testing.T) {
-	err := JSONTester(Actors([]Actor{NewPlayer("PlayerOne", 1)}), Actors([]Actor{}))
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
+/*
 func TestNumbers(t *testing.T) {
 	args := &MoveArgs{Actors([]Actor{}), []Point{Point{0, 0}}}
 	dir := North
@@ -63,16 +57,17 @@ func TestNumbers(t *testing.T) {
 	}
 	fmt.Println(args.Points[0])
 }
+*/
 
 func TestObjectSprite(t *testing.T) {
-	p := NewPlayer("PlayerOne", 1)
+	p := NewPlayer("PlayerOne")
 	s := p.Sprite()
 	fmt.Println(string(s.Ch))
 	fmt.Println(p.Sprite())
 }
 
 func TestActions(t *testing.T) {
-	pos := Pos{Point{3, 5}, "Map"}
+	pos := Pos{Point{3, 5}, 0}
 	act := Action{
 		Name:   "Move",
 		Caller: "Player",
@@ -95,12 +90,12 @@ func TestActions(t *testing.T) {
 		ma.Caller = a.Caller
 		tmp := a.Args[0].(map[string]interface{})
 		fmt.Println(tmp)
-		ma.Pos = Pos{Point{int(tmp["X"].(float64)), int(tmp["Y"].(float64))}, int(tmp["Map"].(float64))}
+		ma.Pos = Pos{Point{int(tmp["X"].(float64)), int(tmp["Y"].(float64))}, uint8(tmp["Map"].(float64))}
 		fmt.Println(a)
 		fmt.Println(ma)
 	}
 }
-*/
+
 /*
 func TestMoreJSON(t *testing.T) {
 	n := NewPlayer("Player", 1)

@@ -3,34 +3,41 @@ package main
 import (
 	"fmt"
 	termbox "github.com/nsf/termbox-go"
-	"github.com/sbrow/gorogue/keys"
+	engine "github.com/sbrow/gorogue"
 	. "github.com/sbrow/gorogue/ui"
 )
 
 func main() {
 	termbox.Init()
 	w, h := termbox.Size()
-	// defer termbox.Close()
-	// v := New("cmds", NewBounds(1, h-1, w-1, h-1))
-	v := New("cmds", NewBounds(1, h-2, w-1, h-1))
-	v.Draw()
+	for x := 0; x < w; x++ {
+		for y := 0; y < h; y++ {
+			SetCell(x, y, termbox.Cell(engine.FloorTile.Sprite))
+		}
+	}
+	v := NewTextField("cmds", NewBounds(0, h-3, w, h))
+	termbox.Flush()
+	_ = termbox.PollEvent()
+	v.Popup()
+	_ = termbox.PollEvent()
 	termbox.Close()
 	fmt.Println(v.Text())
 }
 
 type TextField struct {
 	name   string
-	border BorderSet
+	border Border
 	bounds Bounds
 	text   string
+	prefix string
 }
 
-func New(name string, b Bounds) *TextField {
+func NewTextField(name string, b Bounds) *TextField {
 	return &TextField{
 		name:   name,
-		border: HeavyBorder,
+		border: Border{HeavyBorder, true},
 		bounds: b,
-		text:   ":",
+		prefix: ":",
 	}
 }
 
@@ -42,19 +49,37 @@ func (t *TextField) Draw() {
 	defer termbox.Flush()
 	t.border.Draw(t.bounds)
 	x, y := t.bounds[0].Ints()
-	zero := 2
-	for _, r := range t.text {
+	if t.border.Visible {
+		x++
+		y++
+	}
+	for _, r := range t.prefix + t.text {
 		termbox.SetCell(x, y, r, termbox.ColorDefault, termbox.ColorDefault)
 		x++
 	}
 	termbox.SetCursor(x, y)
+	for x < t.bounds[1].X {
+		termbox.SetCell(x, y, ' ', termbox.ColorDefault, termbox.ColorDefault)
+		x++
+	}
+}
+
+func (t *TextField) Popup() {
+	defer termbox.Flush()
+	x, y := t.bounds[0].Ints()
+	if t.border.Visible {
+		x++
+		y++
+	}
+	zero := x
+	x += len(t.text)
 main:
 	for {
-		termbox.SetCursor(x, y)
+		t.Draw()
 		termbox.Flush()
 		switch ev := termbox.PollEvent(); ev.Type {
 		case termbox.EventKey:
-			k := &keys.Key{}
+			k := &engine.Key{}
 			k.Mod = ev.Mod
 			if ev.Ch != 0 {
 				k.Ch = ev.Ch
@@ -62,35 +87,32 @@ main:
 				k.Key = ev.Key
 			}
 			switch {
-			case *k == keys.Esc:
-				t.text = ":"
+			case *k == engine.Esc:
+				t.text = ""
 				break main
-			case *k == keys.Enter:
+			case *k == engine.Enter:
 				break main
-			case *k == keys.Backspace:
+			case *k == engine.Backspace:
 				fallthrough
 			case k.Key == termbox.KeyBackspace2:
 				fallthrough
-			case *k == keys.Delete:
+			case *k == engine.Delete:
 				if x > zero {
 					x--
 					termbox.SetCell(x, y, ' ', termbox.ColorDefault, termbox.ColorDefault)
+					t.text = t.text[:len(t.text)-1]
 				}
-			case *k == keys.Space:
+			case *k == engine.Space:
 				k.Ch = ' '
 				fallthrough
 			case k.Mod == 0 && k.Key == 0:
 				termbox.SetCell(x, y, k.Ch, termbox.ColorDefault, termbox.ColorDefault)
+				t.text += string(k.Ch)
 				x++
 			}
 		}
 	}
-	x1, _ := t.bounds[0].X
-	x2, _ := t.bounds[1].X
-	t.text = ""
-	for x := x1; x <= x2; x++ {
-
-	}
+	t.text = t.prefix + t.text
 }
 
 func (t *TextField) Name() string {

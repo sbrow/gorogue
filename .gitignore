@@ -6,3 +6,5 @@
 graphs/
 
 *.log
+
+*.out
