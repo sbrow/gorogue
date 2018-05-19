@@ -37,7 +37,7 @@ func (c *Client) HandleAction(a *engine.Action) error {
 
 func (c *Client) Init() error {
 	// Create a new Map.
-	m := engine.NewMap(80, 24, "Map_1")
+	m := engine.NewMap(5, 5, "Map_1")
 
 	// Add it to our world.
 	c.world = engine.NewWorld(m)

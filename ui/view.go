@@ -45,7 +45,6 @@ func (v *View) Bounds() Bounds {
 	if bounds[1].Y > uibounds[1].Y {
 		bounds[1].Y = uibounds[1].Y
 	}
-	DrawAt(81, 9, bounds)
 	return bounds
 }
 
@@ -53,11 +52,24 @@ func (v *View) Bounds() Bounds {
 	return v.border
 }*/
 
+func (v *View) Center() engine.Point {
+	return engine.Point{v.Width()/2 - 1, v.Height()/2 - 1}
+}
+
+// origin = Center - {w/2, h/2}
+
+func (v *View) CenterView(p engine.Point) {
+	p.Sub(v.Center())
+	DrawAt(83, 5, p)
+	v.origin = p
+}
+
 // Draw displays the view in termbox.
 func (v *View) Draw() error {
 	defer termbox.Flush()
 	bounds := v.Bounds()
 	anchor := bounds[0]
+	termbox.SetCursor(v.Width()/2, v.Height()/2)
 
 	// Get tiles from the map
 	tiles := v.Tiles()
@@ -67,14 +79,6 @@ func (v *View) Draw() error {
 	for y = 0; y < len(tiles[0]); y++ {
 		for x = 0; x < len(tiles); x++ {
 			SetCell(x+anchor.X, y+anchor.Y, termbox.Cell(tiles[x][y].Sprite))
-		}
-		for x = len(tiles); x <= bounds[1].X; x++ {
-			// SetCell(x+anchor.X, y+anchor.Y, engine.EmptyTile.Cell())
-		}
-	}
-	for y = len(tiles[0]); y <= bounds[1].Y; y++ {
-		for x = 0; x < bounds[1].X; x++ {
-			// SetCell(x+anchor.X, y+anchor.Y, engine.EmptyTile.Cell())
 		}
 	}
 	return nil
@@ -96,9 +100,11 @@ func (v *View) Tiles() [][]engine.Tile {
 	b := v.Bounds()
 	x1, y1 := v.origin.X, v.origin.Y
 	x2, y2 := b[1].Ints()
-	x2 -= x1
-	y2 -= y1
-	DrawAt(81, 0, x1, y1, x2, y2)
+	x2 += x1 - 1
+	y2 += y1 - 1
+	DrawAt(85, 0, x1, y1, x2, y2)
+	DrawAt(85, 1, " or: ", v.origin, " w: ", v.Width()/2, " h: ", v.Height()/2)
+	DrawAt(85, 2, b)
 	return v.Map.TileSlice(x1, y1, x2, y2)
 }
 
@@ -108,4 +114,14 @@ func (v *View) Type() UIElementType {
 
 func (v *View) UI() *UI {
 	return v.ui
+}
+
+func (v *View) Width() int {
+	b := v.Bounds()
+	return b[1].X - b[0].X + 1
+}
+
+func (v *View) Height() int {
+	b := v.Bounds()
+	return b[1].Y - b[0].Y + 1
 }

@@ -60,6 +60,11 @@ func (p *Point) String() string {
 	return fmt.Sprintf("(%d %d)", p.X, p.Y)
 }
 
+func (p *Point) Sub(pt Point) {
+	p.X -= pt.X
+	p.Y -= pt.Y
+}
+
 // Ints returns the point as a pair of ints.
 func (p Point) Ints() (x, y int) {
 	return p.X, p.Y

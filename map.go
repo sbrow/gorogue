@@ -93,19 +93,16 @@ func (m *Map) Tick() {
 // [x1, y1], [x2, y2]
 func (m *Map) TileSlice(x1, y1, x2, y2 int) [][]Tile {
 	ret := [][]Tile{}
-	if x2 > m.Width-1 {
-		x2 = m.Width - 1
-	}
-	if y2 > m.Height-1 {
-		y2 = m.Height - 1
-	}
 
-	// Draw Tiles
 	i := 0
 	for x := x1; x <= x2; x++ {
 		ret = append(ret, []Tile{})
 		for y := y1; y <= y2; y++ {
-			ret[i] = append(ret[i], m.Tiles[x][y])
+			if x < 0 || x > m.Width-1 || y < 0 || y > m.Height-1 {
+				ret[i] = append(ret[i], EmptyTile)
+			} else {
+				ret[i] = append(ret[i], m.Tiles[x][y])
+			}
 		}
 		i++
 	}
