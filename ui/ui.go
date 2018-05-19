@@ -2,35 +2,9 @@
 package ui
 
 import (
-	"fmt"
 	termbox "github.com/nsf/termbox-go"
 	engine "github.com/sbrow/gorogue"
 )
-
-// Bounds hold the top left-most and bottom right-most points of a UIElement
-type Bounds [2]engine.Point
-
-func NewBounds(x1, y1, x2, y2 int) Bounds {
-	return Bounds{engine.Point{x1, y1}, engine.Point{x2, y2}}
-}
-
-func (b *Bounds) Grow() {
-	b[0].Shift(engine.NorthEast)
-	b[1].Shift(engine.SouthEast)
-}
-
-func (b *Bounds) Shift(d engine.Direction) {
-	b[0].Shift(d)
-	b[1].Shift(d)
-}
-func (b *Bounds) Shrink() {
-	b[0].Shift(engine.SouthEast)
-	b[1].Shift(engine.NorthEast)
-}
-
-func (b *Bounds) String() string {
-	return fmt.Sprintf("[%s, %s]", b[0].String(), b[1].String())
-}
 
 // UI holds everything a player sees in game.
 type UI struct {
@@ -42,14 +16,15 @@ type UI struct {
 }
 
 // New creates a new UI with a given name and size.
-func NewUI(client engine.Client, name string, w, h int) *UI {
-	return &UI{
-		name:     name,
-		client:   client,
-		bounds:   Bounds{engine.Point{0, 0}, engine.Point{w, h}},
-		border:   nil,
-		Elements: map[string]UIElement{},
-	}
+func NewUI(client engine.Client, name string, x, y, w, h int) *UI {
+	ui := &UI{}
+	ui.client = client
+	ui.border = nil
+	ui.bounds[0] = engine.Point{x, y}
+	ui.bounds[1] = engine.Point{x + w - 1, y + h - 1}
+	ui.name = name
+	ui.Elements = map[string]UIElement{}
+	return ui
 }
 
 // Add adds a UIElement to this UI.
@@ -57,11 +32,6 @@ func (u *UI) Add(name string, e UIElement) UIElement {
 	u.Elements[name] = e
 	e.SetUI(u)
 	return u.Elements[name]
-}
-
-// Bounds return's u's bounds, including the border (if any).
-func (u *UI) Bounds() Bounds {
-	return u.bounds
 }
 
 // Draw displays the UI in termbox. UIElements are drawn in the following order:
@@ -83,13 +53,26 @@ func (u *UI) Draw() error {
 
 	// Print the UI's border.
 	if u.border != nil {
-		u.border.Draw(u.Bounds())
+		u.border.Draw(u.OuterBounds())
 	}
 	return nil
 }
 
+func (u *UI) InnerBounds() Bounds {
+	bounds := u.bounds
+	if u.border.Visible {
+		bounds.Shrink()
+	}
+	return bounds
+}
+
 func (u *UI) Name() string {
 	return u.name
+}
+
+// OuterBounds return's u's bounds, including the border (if any).
+func (u *UI) OuterBounds() Bounds {
+	return u.bounds
 }
 
 // Run runs the active UI.
@@ -105,7 +88,7 @@ func (u *UI) Run() {
 		u.Draw()
 		action, err := engine.Input()
 		if err != nil {
-			engine.Log.Println("error:",err)
+			engine.Log.Println("error:", err)
 		}
 		if action != nil {
 			err := u.client.HandleAction(action)
@@ -127,7 +110,7 @@ func (u *UI) Type() UIElementType {
 // UIElement is anything that can show up in termbox,
 // including UIs, Views and Borders
 type UIElement interface {
-	Border() *Border
+	// Border() *Border
 	Bounds() Bounds
 	Draw() error
 	SetUI(u *UI)

@@ -20,6 +20,7 @@ const (
 )
 
 // TODO: Document
+// TODO: Test
 type BorderRune uint8
 
 const (
@@ -66,21 +67,21 @@ func (b *Border) Draw(bounds Bounds) {
 	s := []rune(string(b.BorderSet))
 
 	// Print the horizontals
-	for x := Ox; x < w-1; x++ {
+	for x := Ox; x < w; x++ {
 		termbox.SetCell(x, Oy, s[Horizontal], termbox.ColorDefault, termbox.ColorBlack)
-		termbox.SetCell(x, h-1, s[Horizontal], termbox.ColorDefault, termbox.ColorBlack)
+		termbox.SetCell(x, h, s[Horizontal], termbox.ColorDefault, termbox.ColorBlack)
 	}
 	// Print the verticals
-	for y := Oy; y < h-1; y++ {
+	for y := Oy; y < h; y++ {
 		termbox.SetCell(Ox, y, s[Vertical], termbox.ColorDefault, termbox.ColorBlack)
-		termbox.SetCell(w-1, y, s[Vertical], termbox.ColorDefault, termbox.ColorBlack)
+		termbox.SetCell(w, y, s[Vertical], termbox.ColorDefault, termbox.ColorBlack)
 	}
 
 	// Print the corners.
 	termbox.SetCell(Ox, Oy, s[LeftTop], termbox.ColorDefault, termbox.ColorBlack)
-	termbox.SetCell(w-1, Oy, s[RightTop], termbox.ColorDefault, termbox.ColorBlack)
-	termbox.SetCell(Ox, h-1, s[LeftBottom], termbox.ColorDefault, termbox.ColorBlack)
-	termbox.SetCell(w-1, h-1, s[RightBottom], termbox.ColorDefault, termbox.ColorBlack)
+	termbox.SetCell(w, Oy, s[RightTop], termbox.ColorDefault, termbox.ColorBlack)
+	termbox.SetCell(Ox, h, s[LeftBottom], termbox.ColorDefault, termbox.ColorBlack)
+	termbox.SetCell(w, h, s[RightBottom], termbox.ColorDefault, termbox.ColorBlack)
 }
 
 type TileSet string

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	termbox "github.com/nsf/termbox-go"
 	engine "github.com/sbrow/gorogue"
-	"strings"
 )
 
 func CellsToByte(cells [][]termbox.Cell, x1, y1, x2, y2 int) []byte {
@@ -26,19 +25,8 @@ func CellsToByte(cells [][]termbox.Cell, x1, y1, x2, y2 int) []byte {
 // DrawAt will attempt to convert v to a string, and fall back on fmt.Sprint(v).
 //
 // DrawAt returns an OutOfScreenBoundryError if the drawing exceeds termbox's size.
-func DrawAt(Ox, Oy int, v interface{}) error {
-	var tmp string
-	switch val := v.(type) {
-	case []byte:
-		tmp = string(val)
-	case []rune:
-		tmp = string(val)
-	case []string:
-		tmp = strings.Join(val, "\n")
-	default:
-		tmp = fmt.Sprint(val)
-	}
-	return DrawString(Ox, Oy, termbox.ColorDefault, termbox.ColorDefault, tmp)
+func DrawAt(Ox, Oy int, v ...interface{}) error {
+	return DrawString(Ox, Oy, termbox.ColorDefault, termbox.ColorDefault, fmt.Sprint(v...))
 }
 
 // DrawRawString prints a string starting at the given coordinates (Ox, Oy).
@@ -64,10 +52,9 @@ func DrawRawString(Ox, Oy int, fg, bg termbox.Attribute, v interface{}) error {
 // Carriage Return ('\r') runes will move the "cursor" to the beginning of the current line.
 //
 // DrawString returns OutOfScreenBoundryError if the drawing exceeds termbox's size.
-func DrawString(Ox, Oy int, fg, bg termbox.Attribute, v interface{}) error {
+func DrawString(Ox, Oy int, fg, bg termbox.Attribute, str string) error {
 	defer termbox.Flush()
 	x, y := Ox, Oy
-	str := fmt.Sprint(v)
 	for _, r := range str {
 		switch r {
 		case '\n':
