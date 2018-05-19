@@ -60,7 +60,6 @@ func (r *RemoteClient) HandleAction(a *engine.Action) error {
 	default:
 		return nil
 	}
-	return nil
 }
 
 func (r *RemoteClient) Init() engine.UI {

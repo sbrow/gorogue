@@ -1,9 +1,6 @@
 package ui
 
-import (
-	"fmt"
-	termbox "github.com/nsf/termbox-go"
-)
+import termbox "github.com/nsf/termbox-go"
 
 // BorderSet is a set of characters that can be used to border a UI element.
 // BorderSets must be laid out in the following order:
@@ -41,10 +38,11 @@ const (
 
 // Border is a border around a UI element.
 type Border struct {
-	BorderSet // The runes to use for the border.
-	Visible   bool
+	BorderSet      // The RuneSet to use for the border.
+	Visible   bool // Whether to draw the border.
 }
 
+// NewBorder returns a new Border with the given values.
 func NewBorder(set BorderSet, vis bool) *Border {
 	return &Border{
 		BorderSet: set,
@@ -52,7 +50,7 @@ func NewBorder(set BorderSet, vis bool) *Border {
 	}
 }
 
-// Draw prints the border into termbox. Borders get drawn after the elements
+// Draw prints the border in termbox. Borders get drawn after the elements
 // inside them.
 func (b *Border) Draw(bounds Bounds) {
 	if !b.Visible {
@@ -65,7 +63,7 @@ func (b *Border) Draw(bounds Bounds) {
 	// Bottom-Right corner.
 	w, h := bounds[1].Ints()
 
-	s := []rune(fmt.Sprint(b.BorderSet))
+	s := []rune(string(b.BorderSet))
 
 	// Print the horizontals
 	for x := Ox; x < w-1; x++ {

@@ -90,22 +90,21 @@ func (m *Map) Tick() {
 }
 
 // TileSlice returns the contents of all tiles within the bounds of
-// [(x1, y1), (x2, y2)]
-func (m *Map) TileSlice(Ox, Oy, w, h int) [][]Tile {
+// [x1, y1], [x2, y2]
+func (m *Map) TileSlice(x1, y1, x2, y2 int) [][]Tile {
 	ret := [][]Tile{}
-	x2, y2 := w, h
-	if w > m.Width-1 {
+	if x2 > m.Width-1 {
 		x2 = m.Width - 1
 	}
-	if h > m.Height-1 {
+	if y2 > m.Height-1 {
 		y2 = m.Height - 1
 	}
 
 	// Draw Tiles
 	i := 0
-	for x := Ox; x <= x2; x++ {
+	for x := x1; x <= x2; x++ {
 		ret = append(ret, []Tile{})
-		for y := Oy; y <= y2; y++ {
+		for y := y1; y <= y2; y++ {
 			ret[i] = append(ret[i], m.Tiles[x][y])
 		}
 		i++
@@ -114,9 +113,9 @@ func (m *Map) TileSlice(Ox, Oy, w, h int) [][]Tile {
 	// Draw Actors
 	for _, a := range m.Actors() {
 		x, y, _ := a.Pos().Ints()
-		if Ox <= x && x <= x2 &&
-			Oy <= y && y <= y2 {
-			ret[x-Ox][y-Oy] = Tile{Sprite: a.Sprite()}
+		if x1 <= x && x <= x2 &&
+			y1 <= y && y <= y2 {
+			ret[x-x1][y-y1] = Tile{Sprite: a.Sprite()}
 		}
 	}
 	return ret

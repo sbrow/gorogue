@@ -41,15 +41,9 @@ func (v *View) Draw() error {
 	origin := v.Origin
 	if v.ui.border != nil {
 		if v.ui.border.Visible {
-			// TODO: Fix shrink method
-			// bounds.Shrink()
-			origin.X++
-			origin.Y++
+			// TODO: Shift bounds accordingly
 		}
 	}
-	origin.X += 5
-	origin.Y += 3
-	// bounds
 
 	// Get tiles from the map
 	tiles := v.Map.TileSlice(bounds[0].X, bounds[0].Y, bounds[1].X,

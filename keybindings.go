@@ -64,7 +64,6 @@ func Input() (*Action, error) {
 			return KeyPressed(*key)
 		}
 	}
-	return nil, nil
 }
 
 // KeyPressed checks to see what action the given key is bound to.

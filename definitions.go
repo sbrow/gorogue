@@ -76,6 +76,23 @@ type Client interface {
 // hence why they are not laid out in perfect sequence.
 type Direction uint8
 
+func (d Direction) Point() Point {
+	var p Point
+	if d&North == North {
+		p.Y--
+	}
+	if d&South == South {
+		p.Y++
+	}
+	if d&East == East {
+		p.X++
+	}
+	if d&West == West {
+		p.X--
+	}
+	return p
+}
+
 const (
 	North     Direction = 1 + iota // 0001
 	East                           // 0010
@@ -107,6 +124,11 @@ type Point struct {
 	Y int
 }
 
+func (p Point) Shift(d Direction) {
+	delta := d.Point()
+	p.X += delta.X
+	p.Y += delta.Y	
+}
 func (p *Point) String() string {
 	return fmt.Sprintf("(%d %d)", p.X, p.Y)
 }

@@ -53,21 +53,9 @@ func (w *World) Move(a *Action) error {
 	p = *caller.Pos()
 	switch a.Args[0].(type) {
 	case Direction:
-		dir := a.Args[0].(Direction)
-		if dir&North == North {
-			p.Y--
-		} else {
-			if dir&South == South {
-				p.Y++
-			}
-		}
-		if dir&East == East {
-			p.X++
-		} else {
-			if dir&West == West {
-				p.X--
-			}
-		}
+		pt := a.Args[0].(Direction).Point()
+		p.X += pt.X
+		p.Y += pt.Y
 	case Pos:
 		p = a.Args[0].(Pos)
 	default:

@@ -35,7 +35,7 @@ type TextField struct {
 func NewTextField(name string, b Bounds) *TextField {
 	return &TextField{
 		name:   name,
-		border: Border{HeavyBorder, true},
+		border: NewBorder(HeavyBorder, true),
 		bounds: b,
 		prefix: ":",
 	}

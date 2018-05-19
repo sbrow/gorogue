@@ -10,16 +10,19 @@ func Fullscreen(c engine.Client, m *engine.Map) engine.UI {
 	mapOrigin := engine.Point{0, 0}
 
 	// Size of our UI minus the border.
-	viewSize := engine.Point{81, 25}
+	uiSize := engine.Point{80, 24}
+
+	viewBounds := Bounds{mapOrigin, engine.Point{uiSize.X-1, uiSize.Y-1}}
+
 
 	// where to place the view in the UI.
 	viewOrign := engine.Point{0, 0}
 
 	// Initialize UI
-	u := NewUI(c, "Fullscreen Game", viewSize.X, viewSize.Y)
+	u := NewUI(c, "Fullscreen Game", uiSize.X, uiSize.Y)
 
 	// Create a new view into exampleMap
-	v := NewView(Bounds{mapOrigin, viewSize}, m, viewOrign)
+	v := NewView(viewBounds, m, viewOrign)
 
 	// Fill our UI with a view of our map.
 	u.Add("Map", v)

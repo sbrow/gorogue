@@ -1,3 +1,4 @@
+// Package ui is responsible for
 package ui
 
 import (
@@ -14,17 +15,17 @@ func NewBounds(x1, y1, x2, y2 int) Bounds {
 }
 
 func (b *Bounds) Grow() {
-	b[0].X--
-	b[0].Y--
-	b[1].X++
-	b[1].Y++
+	b[0].Shift(engine.NorthEast)
+	b[1].Shift(engine.SouthEast)
 }
 
+func (b *Bounds) Shift(d engine.Direction) {
+	b[0].Shift(d)
+	b[1].Shift(d)
+}
 func (b *Bounds) Shrink() {
-	b[0].X++
-	b[0].Y++
-	b[1].X--
-	b[1].Y--
+	b[0].Shift(engine.SouthEast)
+	b[1].Shift(engine.NorthEast)
 }
 
 func (b *Bounds) String() string {
@@ -103,8 +104,8 @@ func (u *UI) Run() {
 	for {
 		u.Draw()
 		action, err := engine.Input()
-		if err != nil { //&& err.Error() != KeyNotBoundError { TODO: fix
-			// panic(err)
+		if err != nil {
+			engine.Log.Println("error:",err)
 		}
 		if action != nil {
 			err := u.client.HandleAction(action)
