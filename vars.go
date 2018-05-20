@@ -11,9 +11,9 @@ var Log *log.Logger
 var stdConn Client
 
 var (
-	DefaultPlayer Sprite = Sprite(termbox.Cell{'@', termbox.ColorWhite, termbox.ColorBlack})
-	StairsUp      Sprite = Sprite(termbox.Cell{'>', termbox.ColorDefault, termbox.ColorDefault})
-	StairsDown    Sprite = Sprite(termbox.Cell{'<', termbox.ColorDefault, termbox.ColorDefault})
+	DefaultPlayer termbox.Cell = termbox.Cell{'@', termbox.ColorWhite, termbox.ColorBlack}
+	StairsUp                   = termbox.Cell{'>', termbox.ColorDefault, termbox.ColorDefault}
+	StairsDown                 = termbox.Cell{'<', termbox.ColorDefault, termbox.ColorDefault}
 )
 
 var (

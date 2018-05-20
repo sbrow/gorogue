@@ -3,13 +3,14 @@ package gorogue
 import (
 	"encoding/json"
 	"fmt"
+	termbox "github.com/nsf/termbox-go"
 )
 
 type Player struct {
 	name   string
 	index  int
 	pos    *Pos
-	sprite Sprite
+	sprite termbox.Cell
 }
 
 // NewPlayer creates a new Player using the standard '@' character sprite.
@@ -68,7 +69,7 @@ func (p *Player) SetPos(pos *Pos) {
 	p.pos = pos
 }
 
-func (p *Player) Sprite() Sprite {
+func (p *Player) Sprite() termbox.Cell {
 	return p.sprite
 }
 
@@ -91,6 +92,6 @@ type PlayerJSON struct {
 	Name   string
 	Index  int
 	Pos    *Pos
-	Sprite Sprite
+	Sprite termbox.Cell
 	Type   string
 }

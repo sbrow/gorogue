@@ -68,7 +68,6 @@ type Client interface {
 }
 */
 
-
 type Object interface {
 	Name() string
 	ID() string
@@ -77,7 +76,7 @@ type Object interface {
 	Pos() *Pos
 	SetIndex(i int)
 	SetPos(p *Pos)
-	Sprite() Sprite
+	Sprite() termbox.Cell
 	UnmarshalJSON(data []byte) error
 }
 
@@ -111,21 +110,19 @@ type Server interface {
 	SetPort(port string)
 }
 
-type Sprite termbox.Cell
-
 type Tile struct {
-	Sprite
+	Sprite  termbox.Cell
 	Objects []Object
 }
 
 func NewTile(sprite termbox.Cell) Tile {
 	return Tile{
-		Sprite: Sprite(sprite),
+		Sprite: sprite,
 	}
 }
 
 func (t Tile) Cell() termbox.Cell {
-	return termbox.Cell(t.Sprite)
+	return t.Sprite
 }
 
 type UI interface {

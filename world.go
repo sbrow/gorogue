@@ -41,7 +41,6 @@ func (w *World) Maps() []*Map {
 
 func (w *World) Move(a *Action) error {
 	var ma MoveAction
-	// TODO: Make converter from Action to *Move
 	var p Pos
 	if a.Name != "Move" {
 		//TODO: ErrorWrongAction or something.
@@ -49,7 +48,6 @@ func (w *World) Move(a *Action) error {
 	}
 	caller := w.players[a.Caller]
 	ma.Target = caller
-	Log.Println(a.Caller, caller)
 	p = *caller.Pos()
 	switch a.Args[0].(type) {
 	case Direction:
@@ -62,6 +60,7 @@ func (w *World) Move(a *Action) error {
 		return errors.New("Passed wrong args to Client.Move()")
 	}
 	ma.Pos = p
+	Log.Println(a)
 	w.maps[ma.Pos.Map].Move(ma)
 	return nil
 }
