@@ -1,19 +1,19 @@
 package gorogue
 
 import (
-	"bytes"
+	// "bytes"
 	"errors"
-	"fmt"
+	// "fmt"
 	"log"
-	"net"
-	"net/rpc/jsonrpc"
+	// "net"
+	// "net/rpc/jsonrpc"
 	"os"
 	"path/filepath"
 	"runtime"
 )
 
 // TODO: Document
-func NewClient(c Client) {
+func NewClient(c Client, ui UI) {
 	c.Init()
 	c.Run()
 }
@@ -24,7 +24,7 @@ func NewClient(c Client) {
 //
 // Each process can have only one active Client, meaning each call to NewRemoteClient
 // or NewClient will overwrite the previous client.
-func NewRemoteClient(c RemoteClient, host, port string) error {
+/*func NewRemoteClient(c RemoteClient, host, port string) error {
 	// Disconnect the previous session, if any
 	if stdConn != nil {
 		switch stdConn.(type) {
@@ -53,14 +53,14 @@ func NewRemoteClient(c RemoteClient, host, port string) error {
 	}
 	remoteConn.Run()
 	return nil
-}
+}*/
 
 // NewServer starts a server on the given port. Servers are used to control
 // the World in an online game.
-func NewServer(s Server, port string) {
+/*func NewServer(s Server, port string) {
 	s.SetPort(port)
 	s.HandleRequests()
-}
+}*/
 
 func SetLog(name string) (*os.File, error) {
 	_, filename, _, ok := runtime.Caller(0)

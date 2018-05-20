@@ -2,8 +2,8 @@ package gorogue
 
 // Action requests that the World perform some function.
 // Actions are passed from Actors/Clients to Servers/Worlds,
-// where they are evaluated. Almost everything that occurs in the game
-// should be the result of an action.
+// where they are evaluated. Almost every event that occurs
+// in the game should be the result of an action.
 //
 // One Action is collected from each Actor every Map Tick.
 type Action struct {
@@ -15,7 +15,7 @@ type Action struct {
 // NewAction returns a new, generic action with the given traits.
 // Custom actions should have a function to convert them to generic
 // actions, as generic actions are far less likely to have problems
-// unmarshaling when transferring to a server.
+// unmarshaling when transferring to a Server.
 func NewAction(name, caller string, args ...interface{}) *Action {
 	return &Action{Name: name, Caller: caller, Args: args}
 }

@@ -5,69 +5,71 @@ import (
 	"errors"
 	"fmt"
 	termbox "github.com/nsf/termbox-go"
-	engine "github.com/sbrow/gorogue"
 )
 
-func CellsToByte(cells [][]termbox.Cell, x1, y1, x2, y2 int) []byte {
-	var buff bytes.Buffer
-	for y := y1; y < y2; y++ {
-		for x := x1; x < x2; x++ {
-			buff.WriteRune(cells[x][y].Ch)
-		}
-		buff.WriteRune('\n')
+// Cells returns the current contents of the UI.
+func Cells() ([][]termbox.Cell, error) {
+	termbox.Flush()
+	w, h := Size()
+	w2, h2 := termbox.Size()
+	if w2 == 0 || h2 == 0 {
+		return nil, errors.New("Termbox has no size. Has termbox been initialized?")
 	}
-	return buff.Bytes()
+	cells := termbox.CellBuffer()
+	runes := [][]termbox.Cell{}
+	for x := 0; x <= w2; x++ {
+		if x < w {
+			runes = append(runes, []termbox.Cell{})
+			for y := 0; y <= h2; y++ {
+				if y < h {
+					runes[x] = append(runes[x], cells[(y*w2)+x])
+				}
+			}
+		}
+	}
+	return runes, nil
 }
 
-// DrawAt draws the given interface in termbox starting from the given location (0x, 0y).
+// Print draws the given interface in termbox starting from the given location (0x, 0y).
 // Currently, this will overwrite any existing cells.
 //
-// DrawAt will attempt to convert v to a string, and fall back on fmt.Sprint(v).
+// Print will attempt to convert v to a string, and fall back on fmt.Sprint(v).
 //
-// DrawAt returns an OutOfScreenBoundryError if the drawing exceeds termbox's size.
-func DrawAt(Ox, Oy int, v ...interface{}) error {
-	return DrawString(Ox, Oy, termbox.ColorDefault, termbox.ColorDefault, fmt.Sprint(v...))
-}
-
-// DrawRawString prints a string starting at the given coordinates (Ox, Oy).
-// Line break ('\n') and carriage return ('\r') characters are not handled
-// specially and will appear as spaces.
-//
-// DrawRawString returns OutOfScreenBoundryError if the drawing exceeds termbox's size.
-func DrawRawString(Ox, Oy int, fg, bg termbox.Attribute, v interface{}) error {
+// Print returns an OutOfScreenBoundryError if the drawing exceeds termbox's size.
+func Print(x, y int, v ...interface{}) error {
 	defer termbox.Flush()
-	x, y := Ox, Oy
-	str := fmt.Sprint(v)
-	for _, r := range str {
-		termbox.SetCell(x, y, r, fg, bg)
-		x++
-	}
-	return OutOfScreenBoundry(Bounds{engine.Point{Ox, Oy}, engine.Point{x, y}})
-}
-
-// DrawString prints a string starting at the given coordinates (Ox, Oy).
-//
-// Line Break ('\n') runes will move the "cursor" to the beginning of the next line,
-//
-// Carriage Return ('\r') runes will move the "cursor" to the beginning of the current line.
-//
-// DrawString returns OutOfScreenBoundryError if the drawing exceeds termbox's size.
-func DrawString(Ox, Oy int, fg, bg termbox.Attribute, str string) error {
-	defer termbox.Flush()
-	x, y := Ox, Oy
+	str := fmt.Sprint(v...)
+	x1, y1 := x, y
 	for _, r := range str {
 		switch r {
 		case '\n':
 			y++
 			fallthrough
 		case '\r':
-			x = Ox
+			x = x1
 		default:
-			termbox.SetCell(x, y, r, fg, bg)
+			SetCell(x, y, termbox.Cell{r, termbox.ColorDefault, termbox.ColorDefault})
 			x++
 		}
 	}
-	return OutOfScreenBoundry(Bounds{engine.Point{Ox, Oy}, engine.Point{x, y}})
+	return OutOfScreenBoundry(NewBounds(x1, y1, x, y))
+}
+
+// PrintRaw prints a string starting at the given coordinates (x, y).
+// Line break ('\n') and carriage return ('\r') characters are not handled
+// specially and will appear as spaces.
+//
+// PrintRaw returns OutOfScreenBoundryError if the drawing exceeds termbox's size.
+func PrintRaw(x, y int, v interface{}) error {
+	defer termbox.Flush()
+	x1, y1 := x, y
+	fg, bg := termbox.ColorDefault, termbox.ColorDefault
+	str := fmt.Sprint(v)
+	for _, r := range str {
+		SetCell(x, y, termbox.Cell{r, fg, bg})
+		x++
+	}
+	return OutOfScreenBoundry(NewBounds(x1, y1, x, y))
 }
 
 // OutOfScreenBoundry determines whether the given boundries are larger than
@@ -75,7 +77,7 @@ func DrawString(Ox, Oy int, fg, bg termbox.Attribute, str string) error {
 //
 // Called by functions that draw to termbox.
 func OutOfScreenBoundry(b Bounds) error {
-	w, h := termbox.Size()
+	w, h := Size()
 	var x, y int
 
 	// If any coordinate is outside the screen, return an error.
@@ -97,26 +99,17 @@ func OutOfScreenBoundry(b Bounds) error {
 	return nil
 }
 
-// PrintScreen returns the current contents of termbox.
-func PrintScreen() ([][]termbox.Cell, error) {
-	w, h := termbox.Size()
-	fmt.Println("w", w, "h", h)
-	if w == 0 || h == 0 {
-		return nil, errors.New("Termbox has no size. Has termbox been initialized?")
+func PrintScreen() ([]byte, error) {
+	var buff bytes.Buffer
+	cells, err := Cells()
+	if err != nil {
+		return buff.Bytes(), err
 	}
-	cells := termbox.CellBuffer()
-	runes := [][]termbox.Cell{}
-	for x := 0; x < w; x++ {
-		runes = append(runes, []termbox.Cell{})
-		for y := 0; y < h; y++ {
-			runes[x] = append(runes[x], cells[(y*w)+x])
+	for y := 0; y < len(cells[0]); y++ {
+		for x := 0; x < len(cells); x++ {
+			buff.WriteRune(cells[x][y].Ch)
 		}
+		buff.WriteRune('\n')
 	}
-	return runes, nil
-}
-
-// SetCell is a wrapper for termbox.SetCell, which takes Cell attributes individually.
-// SetCell will set the state of the given Cell in termbox.
-func SetCell(x, y int, c termbox.Cell) {
-	termbox.SetCell(x, y, c.Ch, c.Fg, c.Bg)
+	return buff.Bytes(), nil
 }

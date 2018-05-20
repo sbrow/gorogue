@@ -7,7 +7,6 @@ import (
 
 // View is a window into a Map. Views can be any size.
 type View struct {
-	ui *UI
 	// border *Border
 	anchor engine.Point // Where this view is located in the UI.
 	bounds Bounds
@@ -35,7 +34,7 @@ func NewView(mapBounds Bounds, m *engine.Map, anchor engine.Point) *View {
 
 func (v *View) Bounds() Bounds {
 	bounds := Bounds{v.anchor, v.anchor}
-	uibounds := v.ui.InnerBounds()
+	uibounds := InnerBounds()
 	bounds[0].Add(uibounds[0])
 	bounds[1].Add(v.size)
 
@@ -54,13 +53,11 @@ func (v *View) Bounds() Bounds {
 
 func (v *View) Center() engine.Point {
 	return engine.Point{v.Width()/2 - 1, v.Height()/2 - 1}
+	// return engine.Point{v.Width() / 2, v.Height() / 2}
 }
-
-// origin = Center - {w/2, h/2}
 
 func (v *View) CenterView(p engine.Point) {
 	p.Sub(v.Center())
-	DrawAt(83, 5, p)
 	v.origin = p
 }
 
@@ -69,7 +66,6 @@ func (v *View) Draw() error {
 	defer termbox.Flush()
 	bounds := v.Bounds()
 	anchor := bounds[0]
-	termbox.SetCursor(v.Width()/2, v.Height()/2)
 
 	// Get tiles from the map
 	tiles := v.Tiles()
@@ -92,28 +88,17 @@ func (v *View) Origin() engine.Point {
 	v.border = b
 }*/
 
-func (v *View) SetUI(ui *UI) {
-	v.ui = ui
-}
-
 func (v *View) Tiles() [][]engine.Tile {
 	b := v.Bounds()
 	x1, y1 := v.origin.X, v.origin.Y
 	x2, y2 := b[1].Ints()
 	x2 += x1 - 1
 	y2 += y1 - 1
-	DrawAt(85, 0, x1, y1, x2, y2)
-	DrawAt(85, 1, " or: ", v.origin, " w: ", v.Width()/2, " h: ", v.Height()/2)
-	DrawAt(85, 2, b)
 	return v.Map.TileSlice(x1, y1, x2, y2)
 }
 
 func (v *View) Type() UIElementType {
 	return UITypeView
-}
-
-func (v *View) UI() *UI {
-	return v.ui
 }
 
 func (v *View) Width() int {

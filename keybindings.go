@@ -96,12 +96,13 @@ type Key struct {
 //
 // TODO: finish adding.
 var (
-	Esc Key = Key{0, termbox.KeyEsc, 0}
+	Backspace      = Key{0, termbox.KeyBackspace, 0}
+	Backspace2     = Key{0, termbox.KeyBackspace, 0}
+	Delete         = Key{0, termbox.KeyDelete, 0}
+	Enter          = Key{0, termbox.KeyEnter, 0}
+	Esc        Key = Key{0, termbox.KeyEsc, 0}
+	Space          = Key{0, termbox.KeySpace, 0}
 	// Tab           = Key{0, termbox.KeyTab, 0}
-	// Space         = Key{0, termbox.KeySpace, 0}
-	// Backspace     = Key{0, termbox.KeyBackspace2, 0}
-	// Delete        = Key{0, termbox.KeyDelete, 0}
-	// Enter         = Key{0, termbox.KeyEnter, 0}
 )
 
 // KeyNotBoundError is returned when a key is looked up, but it not currently

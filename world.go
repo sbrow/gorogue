@@ -6,14 +6,14 @@ import (
 )
 
 type World struct {
-	maps    []*Map
-	players map[string]Actor
+	Maps    []*Map
+	Players map[string]Actor
 }
 
 func NewWorld(m ...*Map) *World {
 	return &World{
-		maps:    m,
-		players: map[string]Actor{},
+		Maps:    m,
+		Players: map[string]Actor{},
 	}
 }
 
@@ -35,9 +35,9 @@ func (w *World) HandleAction(a *Action, reply *string) error {
 	return err
 }
 
-func (w *World) Maps() []*Map {
-	return w.maps
-}
+/*func (w *World) Maps() []*Map {
+	return w.Maps
+}*/
 
 func (w *World) Move(a *Action) error {
 	var ma MoveAction
@@ -46,7 +46,7 @@ func (w *World) Move(a *Action) error {
 		//TODO: ErrorWrongAction or something.
 		return errors.New("ErrorWrongAction")
 	}
-	caller := w.players[a.Caller]
+	caller := w.Players[a.Caller]
 	ma.Target = caller
 	p = *caller.Pos()
 	switch a.Args[0].(type) {
@@ -61,26 +61,26 @@ func (w *World) Move(a *Action) error {
 	}
 	ma.Pos = p
 	Log.Println(a)
-	w.maps[ma.Pos.Map].Move(ma)
+	w.Maps[ma.Pos.Map].Move(ma)
 	return nil
 }
 
-func (w *World) Players() map[string]Actor {
-	return w.players
-}
+/*func (w *World) Players() map[string]Actor {
+	return w.Players
+}*/
 
 func (w *World) Spawn(s *SpawnAction) error {
 	//
-	m := rand.Intn(len(w.maps))
+	m := rand.Intn(len(w.Maps))
 	//
-	x := rand.Intn(w.maps[m].Width)
-	y := rand.Intn(w.maps[m].Height)
+	x := rand.Intn(w.Maps[m].Width)
+	y := rand.Intn(w.Maps[m].Height)
 	p := NewPos(x, y, m)
 	//
-	w.players[s.Caller] = s.Actor
-	a := w.players[s.Caller]
+	w.Players[s.Caller] = s.Actor
+	a := w.Players[s.Caller]
 	a.SetPos(p)
-	w.maps[m].Players["Player_1"] = a
-	Log.Println(s.Caller, w.players[s.Caller])
+	w.Maps[m].Players["Player_1"] = a
+	Log.Println(s.Caller, w.Players[s.Caller])
 	return nil
 }

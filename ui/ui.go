@@ -1,50 +1,50 @@
-// Package ui is responsible for
+// Package ui is responsible for drawing the user interface and interpreting
+// user input.
 package ui
 
 import (
 	termbox "github.com/nsf/termbox-go"
 	engine "github.com/sbrow/gorogue"
+	"log"
 )
 
+var std *ui
+
 // UI holds everything a player sees in game.
-type UI struct {
-	name     string
+type ui struct {
 	client   engine.Client
 	bounds   Bounds
 	border   *Border              // The UI's border (if any).
-	Elements map[string]UIElement // Views contained in this UI.
+	elements map[string]UIElement // Views contained in this UI.
 }
 
-// New creates a new UI with a given name and size.
-func NewUI(client engine.Client, name string, x, y, w, h int) *UI {
-	ui := &UI{}
-	ui.client = client
-	ui.border = nil
-	ui.bounds[0] = engine.Point{x, y}
-	ui.bounds[1] = engine.Point{x + w - 1, y + h - 1}
-	ui.name = name
-	ui.Elements = map[string]UIElement{}
-	return ui
+// New creates a new UI with a given size.
+func New(client engine.Client, w, h int) {
+	std = &ui{}
+	std.client = client
+	std.border = nil
+	std.bounds[0] = engine.Point{0, 0}
+	std.bounds[1] = engine.Point{w - 1, h - 1}
+	std.elements = map[string]UIElement{}
 }
 
 // Add adds a UIElement to this UI.
-func (u *UI) Add(name string, e UIElement) UIElement {
-	u.Elements[name] = e
-	e.SetUI(u)
-	return u.Elements[name]
+func Add(name string, e UIElement) UIElement {
+	std.elements[name] = e
+	return std.elements[name]
 }
 
 // Draw displays the UI in termbox. UIElements are drawn in the following order:
 //
 // Views, Border.
-func (u *UI) Draw() error {
+func Draw() error {
 	err := termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 	if err != nil {
 		return err
 	}
 	termbox.Flush()
 	// Print each view
-	for _, e := range u.Elements {
+	for _, e := range std.elements {
 		err := e.Draw()
 		if err != nil {
 			return err
@@ -52,31 +52,35 @@ func (u *UI) Draw() error {
 	}
 
 	// Print the UI's border.
-	if u.border != nil {
-		u.border.Draw(u.OuterBounds())
+	if std.border != nil {
+		std.border.Draw(OuterBounds())
 	}
 	return nil
 }
 
-func (u *UI) InnerBounds() Bounds {
-	bounds := u.bounds
-	if u.border.Visible {
+func Init() {
+	err := termbox.Init()
+	if err != nil {
+		panic(err)
+	}
+	Draw()
+}
+
+func InnerBounds() Bounds {
+	bounds := std.bounds
+	if std.border.Visible {
 		bounds.Shrink()
 	}
 	return bounds
 }
 
-func (u *UI) Name() string {
-	return u.name
-}
-
 // OuterBounds return's u's bounds, including the border (if any).
-func (u *UI) OuterBounds() Bounds {
-	return u.bounds
+func OuterBounds() Bounds {
+	return std.bounds
 }
 
 // Run runs the active UI.
-func (u *UI) Run() {
+func Run() {
 	err := termbox.Init()
 	defer termbox.Close()
 	if err != nil {
@@ -85,13 +89,16 @@ func (u *UI) Run() {
 	termbox.SetOutputMode(termbox.Output256)
 
 	for {
-		u.Draw()
+		Draw()
 		action, err := engine.Input()
 		if err != nil {
-			engine.Log.Println("error:", err)
-		}
-		if action != nil {
-			err := u.client.HandleAction(action)
+			// engine.Log.Println("error:", err)
+			log.Println("error: ", err)
+		} else if action != nil {
+			if std.client == nil {
+				return
+			}
+			err := std.client.HandleAction(action)
 			if err != nil {
 				return
 			}
@@ -99,12 +106,18 @@ func (u *UI) Run() {
 	}
 }
 
-func (u *UI) SetBorder(b *Border) {
-	u.border = b
+// SetCell is a wrapper for termbox.SetCell, which takes Cell attributes individually.
+// SetCell will set the state of the given Cell in termbox.
+func SetCell(x, y int, c termbox.Cell) {
+	termbox.SetCell(x, y, c.Ch, c.Fg, c.Bg)
 }
 
-func (u *UI) Type() UIElementType {
-	return UITypeUI
+func Size() (w, h int) {
+	return std.bounds.Size()
+}
+
+func SetBorder(set BorderSet, vis bool) {
+	std.border = NewBorder(set, vis)
 }
 
 // UIElement is anything that can show up in termbox,
@@ -113,9 +126,7 @@ type UIElement interface {
 	// Border() *Border
 	Bounds() Bounds
 	Draw() error
-	SetUI(u *UI)
 	Type() UIElementType
-	UI() *UI
 }
 
 // UIElementType is an enum of valid UIElements.

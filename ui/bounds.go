@@ -12,14 +12,21 @@ func NewBounds(x1, y1, x2, y2 int) Bounds {
 	return Bounds{engine.Point{x1, y1}, engine.Point{x2, y2}}
 }
 
-/*func (b *Bounds) Grow() {
-	b[0].Shift(engine.NorthEast)
+/*
+func (b *Bounds) Grow() {
+	b[0].Shift(engine.NorthWest)
 	b[1].Shift(engine.SouthEast)
 }
-*/
+
 func (b *Bounds) Shift(d engine.Direction) {
 	b[0].Shift(d)
 	b[1].Shift(d)
+}
+*/
+
+func (b *Bounds) Size() (w, h int) {
+	return b[1].X - b[0].X + 1,
+		b[1].Y - b[0].Y + 1
 }
 
 func (b *Bounds) Shrink() {

@@ -1,32 +1,13 @@
-package main
+package ui
 
 import (
-	"fmt"
 	termbox "github.com/nsf/termbox-go"
 	engine "github.com/sbrow/gorogue"
-	. "github.com/sbrow/gorogue/ui"
 )
-
-func main() {
-	termbox.Init()
-	w, h := termbox.Size()
-	for x := 0; x < w; x++ {
-		for y := 0; y < h; y++ {
-			SetCell(x, y, termbox.Cell(engine.FloorTile.Sprite))
-		}
-	}
-	v := NewTextField("cmds", NewBounds(0, h-3, w, h))
-	termbox.Flush()
-	_ = termbox.PollEvent()
-	v.Popup()
-	_ = termbox.PollEvent()
-	termbox.Close()
-	fmt.Println(v.Text())
-}
 
 type TextField struct {
 	name   string
-	border Border
+	border *Border
 	bounds Bounds
 	text   string
 	prefix string
@@ -75,8 +56,8 @@ func (t *TextField) Popup() {
 	x += len(t.text)
 main:
 	for {
+		Draw()
 		t.Draw()
-		termbox.Flush()
 		switch ev := termbox.PollEvent(); ev.Type {
 		case termbox.EventKey:
 			k := &engine.Key{}

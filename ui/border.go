@@ -1,6 +1,9 @@
 package ui
 
-import termbox "github.com/nsf/termbox-go"
+import (
+	termbox "github.com/nsf/termbox-go"
+	engine "github.com/sbrow/gorogue"
+)
 
 // BorderSet is a set of characters that can be used to border a UI element.
 // BorderSets must be laid out in the following order:
@@ -11,7 +14,7 @@ import termbox "github.com/nsf/termbox-go"
 // Bottom-Left, Bottom-Middle, Bottom-Right
 //
 // TODO: Add remaining borders.
-type BorderSet TileSet
+type BorderSet engine.TileSet
 
 const (
 	LightBorder  BorderSet = "─│┌┬┐├┼┤└┴┘"
@@ -20,7 +23,7 @@ const (
 )
 
 // TODO: Document
-// TODO: Test
+// TODO: Test`
 type BorderRune uint8
 
 const (
@@ -60,28 +63,26 @@ func (b *Border) Draw(bounds Bounds) {
 	defer termbox.Flush()
 
 	// Top-Left corner.
-	Ox, Oy := bounds[0].Ints()
+	x1, y1 := bounds[0].Ints()
 	// Bottom-Right corner.
-	w, h := bounds[1].Ints()
+	x2, y2 := bounds[1].Ints()
 
 	s := []rune(string(b.BorderSet))
 
 	// Print the horizontals
-	for x := Ox; x < w; x++ {
-		termbox.SetCell(x, Oy, s[Horizontal], termbox.ColorDefault, termbox.ColorBlack)
-		termbox.SetCell(x, h, s[Horizontal], termbox.ColorDefault, termbox.ColorBlack)
+	for x := x1; x < x2; x++ {
+		termbox.SetCell(x, y1, s[Horizontal], termbox.ColorDefault, termbox.ColorBlack)
+		termbox.SetCell(x, y2, s[Horizontal], termbox.ColorDefault, termbox.ColorBlack)
 	}
 	// Print the verticals
-	for y := Oy; y < h; y++ {
-		termbox.SetCell(Ox, y, s[Vertical], termbox.ColorDefault, termbox.ColorBlack)
-		termbox.SetCell(w, y, s[Vertical], termbox.ColorDefault, termbox.ColorBlack)
+	for y := y1; y < y2; y++ {
+		termbox.SetCell(x1, y, s[Vertical], termbox.ColorDefault, termbox.ColorBlack)
+		termbox.SetCell(x2, y, s[Vertical], termbox.ColorDefault, termbox.ColorBlack)
 	}
 
 	// Print the corners.
-	termbox.SetCell(Ox, Oy, s[LeftTop], termbox.ColorDefault, termbox.ColorBlack)
-	termbox.SetCell(w, Oy, s[RightTop], termbox.ColorDefault, termbox.ColorBlack)
-	termbox.SetCell(Ox, h, s[LeftBottom], termbox.ColorDefault, termbox.ColorBlack)
-	termbox.SetCell(w, h, s[RightBottom], termbox.ColorDefault, termbox.ColorBlack)
+	termbox.SetCell(x1, y1, s[LeftTop], termbox.ColorDefault, termbox.ColorBlack)
+	termbox.SetCell(x2, y1, s[RightTop], termbox.ColorDefault, termbox.ColorBlack)
+	termbox.SetCell(x1, y2, s[LeftBottom], termbox.ColorDefault, termbox.ColorBlack)
+	termbox.SetCell(x2, y2, s[RightBottom], termbox.ColorDefault, termbox.ColorBlack)
 }
-
-type TileSet string

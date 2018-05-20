@@ -14,15 +14,11 @@
 // 	- "Realtime"	 : 30 ticks per second, Actors that don't act in time are skipped.
 // 	- "Squad Based"	 : Allows each player to control more than one Actor."
 // 	- "Action Points": Characters spend AP to perform actions, AP refreshes each tick.
-//
-// Online Mode
-//
-// In online mode, RemoteClients connect to a Server.
 package gorogue
 
 import (
 	termbox "github.com/nsf/termbox-go"
-	"net/rpc"
+	// "net/rpc"
 )
 
 // Actor is an object that can move. There are two main kinds of actors:
@@ -81,13 +77,13 @@ type Object interface {
 }
 
 // TODO: Document
-type RemoteClient interface {
+/*type RemoteClient interface {
 	Client
 	Connect(host, port string)
 	Disconnect()
 	SetAddr(addr string)
 	SetRPC(*rpc.Client)
-}
+}*/
 
 // Server is a world that accepts RemoteClient connections over TCP/IP.
 //
@@ -100,7 +96,7 @@ type RemoteClient interface {
 // 	- the method's second argument is a pointer.
 //	- the method has return type error.
 // See the net/rpc package for more details.
-type Server interface {
+/*type Server interface {
 	// World
 	Conns() []string
 	HandleAction(a *Action, reply *string) error
@@ -109,27 +105,30 @@ type Server interface {
 	Port() string
 	SetPort(port string)
 }
-
+*/
+// Tile is square on the Map. It is the smallest increment a Map can be broken
+// down into.
+// Tiles generally represent immovable parts of the environment:
+// walls, floors, doors, etc.
 type Tile struct {
 	Sprite  termbox.Cell
 	Objects []Object
 }
 
+type TileSet string
+
+const (
+	Tiles TileSet = " .@#><"
+)
+
+// NewTile returns a Tile with the given sprite.
 func NewTile(sprite termbox.Cell) Tile {
 	return Tile{
 		Sprite: sprite,
 	}
 }
 
-func (t Tile) Cell() termbox.Cell {
-	return t.Sprite
-}
-
 type UI interface {
 	Run()
+	Draw() error
 }
-
-// type World interface {
-// 	Maps() []Map
-// 	Players() map[string]Actor
-// }

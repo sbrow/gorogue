@@ -66,7 +66,7 @@ func (r *RemoteClient) Init() engine.UI {
 	r.Spawn(NewPlayer("Player"))
 	r.Ping()
 	// TODO: (10) active squad member
-	return assets.Fullscreen(r, &r.Squad()[0].Pos().Map)
+	return assets.Standard(r, &r.Squad()[0].Pos().Map)
 }
 
 func (r *RemoteClient) Maps() map[string]engine.Map {
