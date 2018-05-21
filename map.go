@@ -5,26 +5,24 @@ import (
 	"log"
 )
 
-// Map is a 2 dime:nsional plane containing tiles, objects and Actors. Each map will continue
-// to Tick, so long as it has at least one active connection.
+// Map is a 2 dimensional plane containing tiles, objects and Actors. Each map will continue
+// to Tick, so long as it has at least one active connection. (Local or remote).
 type Map struct {
-	Name    string // The key that identifies this map in the server.
-	ID      uint8
-	Height  int // The number of vertical tiles.
-	Width   int // The number of horizontal tiles.
-	Players map[string]Actor
-	Tiles   [][]Tile
-	ticks   int // The number of times this map has called Tick()
+	ID      uint8            // The index of this map in its World.
+	Height  int              // The number of vertical tiles.
+	Width   int              // The number of horizontal tiles.
+	Players map[string]Actor // Player characters on this Map.
+	Tiles   [][]Tile         // The Tiles that make this map up.
+	ticks   int              // The number of times this map has called Tick()
 	actions chan int
 	results chan bool
 }
 
-// NewMap creates a new, empty map with given dimensions and names.
-func NewMap(w, h int, name string) *Map {
+// NewMap creates a new, empty map with the given dimensions.
+func NewMap(w, h int) *Map {
 	m := &Map{}
 	m.Width = w
 	m.Height = h
-	m.Name = name
 	for x := 0; x < w; x++ {
 		m.Tiles = append(m.Tiles, []Tile{})
 		for y := 0; y < h; y++ {
@@ -75,7 +73,7 @@ func (m *Map) Move(a MoveAction) error {
 // Actor on the Map. Tick blocks all NPCs and connections.
 //
 // Currently, Actions are evaluated in FIFO order, meaning that Players' actions
-//  will almost always be evaluated last.
+// will almost always be evaluated last.
 func (m *Map) Tick() {
 	queue := make([]int, len(m.Actors()))
 	for i := 0; i < len(queue); i++ {
@@ -90,7 +88,10 @@ func (m *Map) Tick() {
 }
 
 // TileSlice returns the contents of all tiles within the bounds of
-// [x1, y1], [x2, y2]
+// [x1, y1], [x2, y2]. TileSlice's paramaters do not need to be within the
+// Map's bounds, tiles outside will appear as BlankTiles
+//
+// TODO: Describe better.
 func (m *Map) TileSlice(x1, y1, x2, y2 int) [][]Tile {
 	ret := [][]Tile{}
 
@@ -99,7 +100,7 @@ func (m *Map) TileSlice(x1, y1, x2, y2 int) [][]Tile {
 		ret = append(ret, []Tile{})
 		for y := y1; y <= y2; y++ {
 			if x < 0 || x > m.Width-1 || y < 0 || y > m.Height-1 {
-				ret[i] = append(ret[i], EmptyTile)
+				ret[i] = append(ret[i], BlankTile)
 			} else {
 				ret[i] = append(ret[i], m.Tiles[x][y])
 			}

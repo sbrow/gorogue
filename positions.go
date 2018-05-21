@@ -9,6 +9,7 @@ import "fmt"
 // hence why they are not laid out in perfect sequence.
 type Direction uint8
 
+// Point returns d in Point form.
 func (d Direction) Point() Point {
 	var p Point
 	if d&North == North {
@@ -45,6 +46,7 @@ type Point struct {
 	Y int
 }
 
+// Add sets the Point equal to the geometric sum of it and pt.
 func (p *Point) Add(pt Point) {
 	p.X += pt.X
 	p.Y += pt.Y

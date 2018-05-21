@@ -11,13 +11,7 @@ var Log *log.Logger
 var stdConn Client
 
 var (
-	DefaultPlayer termbox.Cell = termbox.Cell{'@', termbox.ColorWhite, termbox.ColorBlack}
-	StairsUp                   = termbox.Cell{'>', termbox.ColorDefault, termbox.ColorDefault}
-	StairsDown                 = termbox.Cell{'<', termbox.ColorDefault, termbox.ColorDefault}
-)
-
-var (
-	EmptyTile Tile = NewTile(termbox.Cell{' ', termbox.ColorWhite, termbox.ColorBlack})
-	FloorTile Tile = NewTile(termbox.Cell{'.', termbox.ColorWhite, termbox.ColorBlack})
-	WallTile  Tile = NewTile(termbox.Cell{'#', termbox.ColorWhite, termbox.ColorBlack})
+	DefaultPlayer = termbox.Cell{'@', termbox.ColorWhite, termbox.ColorBlack}
+	StairsUp      = termbox.Cell{'>', termbox.ColorDefault, termbox.ColorDefault}
+	StairsDown    = termbox.Cell{'<', termbox.ColorDefault, termbox.ColorDefault}
 )

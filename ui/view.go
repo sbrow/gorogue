@@ -8,10 +8,8 @@ import (
 // View is a window into a Map. Views can be any size.
 type View struct {
 	// border *Border
-	anchor engine.Point // Where this view is located in the UI.
 	bounds Bounds
 	origin engine.Point
-	size   engine.Point
 	Map    *engine.Map // The Map data is drawn from.
 }
 
@@ -22,29 +20,16 @@ type View struct {
 //
 // anchor is the location in the UI where
 // you want this view to be placed.
-func NewView(mapBounds Bounds, m *engine.Map, anchor engine.Point) *View {
+func NewView(origin engine.Point, m *engine.Map) *View {
 	v := &View{
-		origin: mapBounds[0],
-		size:   mapBounds[1],
-		anchor: anchor,
+		origin: origin,
 		Map:    m,
 	}
 	return v
 }
 
 func (v *View) Bounds() Bounds {
-	bounds := Bounds{v.anchor, v.anchor}
-	uibounds := InnerBounds()
-	bounds[0].Add(uibounds[0])
-	bounds[1].Add(v.size)
-
-	if bounds[1].X > uibounds[1].X {
-		bounds[1].X = uibounds[1].X
-	}
-	if bounds[1].Y > uibounds[1].Y {
-		bounds[1].Y = uibounds[1].Y
-	}
-	return bounds
+	return v.bounds
 }
 
 /*func (v *View) Border() *Border {
@@ -64,8 +49,8 @@ func (v *View) CenterView(p engine.Point) {
 // Draw displays the view in termbox.
 func (v *View) Draw() error {
 	defer termbox.Flush()
-	bounds := v.Bounds()
-	anchor := bounds[0]
+	// bounds := v.Bounds()
+	anchor := v.bounds[0]
 
 	// Get tiles from the map
 	tiles := v.Tiles()
@@ -87,6 +72,14 @@ func (v *View) Origin() engine.Point {
 /*func (v *View) SetBorder(b *Border) {
 	v.border = b
 }*/
+
+func (v *View) SetBounds(b Bounds) {
+	v.bounds = b
+}
+
+func (v *View) Size() (w, h int) {
+	return v.Bounds().Size()
+}
 
 func (v *View) Tiles() [][]engine.Tile {
 	b := v.Bounds()

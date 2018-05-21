@@ -29,7 +29,7 @@ func TestQuitAction(t *testing.T) {
 	quitAction := QuitAction{
 		Caller: caller,
 	}
-	if fmt.Sprint(*action) != fmt.Sprint(quitAction.Action()) {
-		t.Fatal("QuitAction does not match.")
+	if fmt.Sprint(action) != fmt.Sprint(quitAction.Action()) {
+		t.Fatalf("Wanted: %s\nGot: %s", quitAction.Action(), action)
 	}
 }

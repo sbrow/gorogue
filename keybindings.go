@@ -6,7 +6,7 @@ import (
 )
 
 // Commands stores all currently bound commands.
-var Commands map[Command]Action
+// var Commands map[Command]Action
 
 // Keybinds stores all currently bound keys.
 var Keybinds map[Key]Action
@@ -38,9 +38,9 @@ func init() {
 
 // BindCommand maps a Command to an Action, overwriting any Action the
 // Command was previously mapped to.
-func BindCommand(cmd Command, Action Action) {
+/*func BindCommand(cmd Command, Action Action) {
 	Commands[cmd] = Action
-}
+}*/
 
 // BindKey maps a Key to an Action, overwriting any Action the
 // Key was previously mapped to.
@@ -48,8 +48,10 @@ func BindKey(key Key, Action Action) {
 	Keybinds[key] = Action
 }
 
-// Input polls the user for a Key, and returns the Action it's mapped to or nil
-// if the key isn't mapped.
+// Input polls the user for a Key and returns the Action it's mapped to.
+// If the Key pressed is bound to an Action, the action is returned along with a nil error.
+// if the Key pressed isn't bound to an Action, a nil Action is returned along
+// with a KeyNotBoundError.
 func Input() (*Action, error) {
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
@@ -82,27 +84,26 @@ func KeyPressed(key Key) (*Action, error) {
 // and type in the command string for the action.
 //
 // TODO: (7) Implement command bar.
-type Command string
+// type Command string
 
-// Key is a keyboard key mapped to an Action. See package github.com/nsf/termbox-go
-// for more information.
+// Key represents a keyboard key or combination of keys.
+//
+// See package github.com/nsf/termbox-go for more information.
 type Key struct {
 	Mod termbox.Modifier // One of termbox.Mod* constants or 0.
 	Key termbox.Key      // One of termbox.Key* constants, invalid if 'Ch' is not 0.
 	Ch  rune             // a unicode character.
 }
 
-// Key
-//
 // TODO: finish adding.
 var (
-	Backspace      = Key{0, termbox.KeyBackspace, 0}
-	Backspace2     = Key{0, termbox.KeyBackspace, 0}
-	Delete         = Key{0, termbox.KeyDelete, 0}
-	Enter          = Key{0, termbox.KeyEnter, 0}
+	Backspace  Key = Key{0, termbox.KeyBackspace, 0}
+	Backspace2 Key = Key{0, termbox.KeyBackspace2, 0}
+	Delete     Key = Key{0, termbox.KeyDelete, 0}
+	Enter      Key = Key{0, termbox.KeyEnter, 0}
 	Esc        Key = Key{0, termbox.KeyEsc, 0}
-	Space          = Key{0, termbox.KeySpace, 0}
-	// Tab           = Key{0, termbox.KeyTab, 0}
+	Space      Key = Key{0, termbox.KeySpace, 0}
+	Tab            = Key{0, termbox.KeyTab, 0}
 )
 
 // KeyNotBoundError is returned when a key is looked up, but it not currently

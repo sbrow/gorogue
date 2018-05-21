@@ -33,7 +33,7 @@ func (c *ExampleClient) HandleAction(a *Action) error {
 
 func (c *ExampleClient) Init() error {
 	// Create a new Map.
-	m := NewMap(5, 5, "Map_1")
+	m := NewMap(5, 5)
 
 	// Add it to our world.
 	c.World = NewWorld(m)

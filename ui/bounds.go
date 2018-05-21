@@ -24,7 +24,7 @@ func (b *Bounds) Shift(d engine.Direction) {
 }
 */
 
-func (b *Bounds) Size() (w, h int) {
+func (b Bounds) Size() (w, h int) {
 	return b[1].X - b[0].X + 1,
 		b[1].Y - b[0].Y + 1
 }

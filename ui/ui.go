@@ -12,10 +12,10 @@ var std *ui
 
 // UI holds everything a player sees in game.
 type ui struct {
+	border   *Border // The UI's border (if any).
 	client   engine.Client
-	bounds   Bounds
-	border   *Border              // The UI's border (if any).
 	elements map[string]UIElement // Views contained in this UI.
+	size     engine.Point
 }
 
 // New creates a new UI with a given size.
@@ -23,18 +23,23 @@ func New(client engine.Client, w, h int) {
 	std = &ui{}
 	std.client = client
 	std.border = nil
-	std.bounds[0] = engine.Point{0, 0}
-	std.bounds[1] = engine.Point{w - 1, h - 1}
+	if w < 1 || h < 1 {
+		std.size = engine.Point{-1, -1}
+	} else {
+		std.size = engine.Point{w - 1, h - 1}
+	}
 	std.elements = map[string]UIElement{}
 }
 
 // Add adds a UIElement to this UI.
 func Add(name string, e UIElement) UIElement {
+	e.SetBounds(*InnerBounds())
+	log.Println(*InnerBounds())
 	std.elements[name] = e
 	return std.elements[name]
 }
 
-// Draw displays the UI in termbox. UIElements are drawn in the following order:
+// Draw displays the UI. UIElements are drawn in the following order:
 //
 // Views, Border.
 func Draw() error {
@@ -53,7 +58,7 @@ func Draw() error {
 
 	// Print the UI's border.
 	if std.border != nil {
-		std.border.Draw(OuterBounds())
+		std.border.Draw(*OuterBounds())
 	}
 	return nil
 }
@@ -66,20 +71,26 @@ func Init() {
 	Draw()
 }
 
-func InnerBounds() Bounds {
-	bounds := std.bounds
-	if std.border.Visible {
+func InnerBounds() *Bounds {
+	bounds := OuterBounds()
+	if std.border != nil && std.border.Visible {
 		bounds.Shrink()
 	}
 	return bounds
 }
 
 // OuterBounds return's u's bounds, including the border (if any).
-func OuterBounds() Bounds {
-	return std.bounds
+func OuterBounds() *Bounds {
+	var bounds Bounds
+	// if !std.scales {
+	bounds[1] = std.size
+	// } else {
+	// 		bounds[1] = engine.NewPoint(termbox.Size())
+	// }
+	return &bounds
 }
 
-// Run runs the active UI.
+// Run starts drawing the UI and accepting user input.
 func Run() {
 	err := termbox.Init()
 	defer termbox.Close()
@@ -112,8 +123,9 @@ func SetCell(x, y int, c termbox.Cell) {
 	termbox.SetCell(x, y, c.Ch, c.Fg, c.Bg)
 }
 
+// Size returns the size of the UI, in Cells.
 func Size() (w, h int) {
-	return std.bounds.Size()
+	return OuterBounds().Size()
 }
 
 func SetBorder(set BorderSet, vis bool) {
@@ -126,6 +138,7 @@ type UIElement interface {
 	// Border() *Border
 	Bounds() Bounds
 	Draw() error
+	SetBounds(b Bounds)
 	Type() UIElementType
 }
 
@@ -135,5 +148,6 @@ type UIElementType uint8
 const (
 	UITypeUI UIElementType = iota
 	UITypeView
-	UITypeTextField
+
+	// UITypeTextField
 )

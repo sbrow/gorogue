@@ -12,12 +12,6 @@ import (
 	"runtime"
 )
 
-// TODO: Document
-func NewClient(c Client, ui UI) {
-	c.Init()
-	c.Run()
-}
-
 // NewRemoteClient initializes a Client connection to a server.
 // NewRemoteClient must be called in order to connect to an online game.
 // For local games, use NewClient instead.
@@ -62,6 +56,7 @@ func NewClient(c Client, ui UI) {
 	s.HandleRequests()
 }*/
 
+// SetLog sets the output for the standard Logger.
 func SetLog(name string) (*os.File, error) {
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {

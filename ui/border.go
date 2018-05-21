@@ -14,16 +14,21 @@ import (
 // Bottom-Left, Bottom-Middle, Bottom-Right
 //
 // TODO: Add remaining borders.
+//
+// TODO: Test
 type BorderSet engine.TileSet
 
 const (
-	LightBorder  BorderSet = "─│┌┬┐├┼┤└┴┘"
-	HeavyBorder  BorderSet = "━┃┏┳┓┣╋┫┗┻┛"
-	DoubleBorder           = "═║╔╦╗╠╬╣╚╩╝"
+	LightBorder      BorderSet = "─│┌┬┐├┼┤└┴┘"
+	HeavyLightBorder BorderSet = "━│┍┯┑┝┿┥┕┷┙"
+	LightHeavyBorder BorderSet = "─┃┎┰┒┠╂┨┖┸┚"
+	HeavyBorder      BorderSet = "━┃┏┳┓┣╋┫┗┻┛"
+	DoubleBorder     BorderSet = "═║╔╦╗╠╬╣╚╩╝"
 )
 
 // TODO: Document
-// TODO: Test`
+//
+// TODO: Test
 type BorderRune uint8
 
 const (

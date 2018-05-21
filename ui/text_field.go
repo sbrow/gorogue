@@ -1,5 +1,6 @@
 package ui
 
+/*
 import (
 	termbox "github.com/nsf/termbox-go"
 	engine "github.com/sbrow/gorogue"
@@ -106,3 +107,4 @@ func (t TextField) Text() string {
 func (t TextField) Type() UIElementType {
 	return UITypeTextField
 }
+*/

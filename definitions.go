@@ -40,10 +40,10 @@ type Client interface {
 	// and setting up the UI.
 	Init() error
 
-	// HandleAction sends an Action received received from Input(), Command strings, etc
+	// HandleAction sends an Action received from: Input(), Command strings, etc.
 	// and sends it to the World to be evaluated.
 	//
-	// Failed/Illegal Actions will return an error, and generally require that another
+	// Failed/Illegal Actions should return an error, and require that another
 	// Action be selected instead.
 	HandleAction(a *Action) error
 
@@ -52,9 +52,6 @@ type Client interface {
 
 	// Player returns the Actor that this Client is in control of.
 	Player() Actor
-
-	// Run starts the UI.
-	Run()
 }
 
 // Conn is the server-side representation of a connection to a client.
@@ -106,6 +103,7 @@ type Object interface {
 	SetPort(port string)
 }
 */
+
 // Tile is square on the Map. It is the smallest increment a Map can be broken
 // down into.
 // Tiles generally represent immovable parts of the environment:
@@ -115,18 +113,24 @@ type Tile struct {
 	Objects []Object
 }
 
-type TileSet string
-
-const (
-	Tiles TileSet = " .@#><"
-)
-
 // NewTile returns a Tile with the given sprite.
 func NewTile(sprite termbox.Cell) Tile {
 	return Tile{
 		Sprite: sprite,
 	}
 }
+
+var (
+	BlankTile Tile = NewTile(termbox.Cell{' ', termbox.ColorWhite, termbox.ColorBlack})
+	FloorTile Tile = NewTile(termbox.Cell{'.', termbox.ColorWhite, termbox.ColorBlack})
+	WallTile  Tile = NewTile(termbox.Cell{'#', termbox.ColorWhite, termbox.ColorBlack})
+)
+
+type TileSet string
+
+const (
+	Tiles TileSet = " .@#><"
+)
 
 type UI interface {
 	Run()

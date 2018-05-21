@@ -13,7 +13,7 @@ func TestRun(t *testing.T) {
 	termbox.Interrupt()
 }
 
-func TestBorderSet_Light(t *testing.T) {
+func TestUIBorder(t *testing.T) {
 	New(nil, 3, 3)
 	SetBorder(LightBorder, true)
 	Init()
@@ -123,6 +123,7 @@ func TestFullScreen(t *testing.T) {
 	}
 }
 
+/*
 func TestTextField(t *testing.T) {
 	Standard(nil, engine.NewMap(80, 24, "Map"))
 	Init()
@@ -133,3 +134,4 @@ func TestTextField(t *testing.T) {
 	termbox.Close()
 	fmt.Println(v.Text())
 }
+*/

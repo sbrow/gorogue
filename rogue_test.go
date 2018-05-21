@@ -1,13 +1,14 @@
 package gorogue_test
 
 import (
-	"encoding/json"
-	"fmt"
-	// termbox "github.com/nsf/termbox-go"
-	. "github.com/sbrow/gorogue"
-	"testing"
+// "encoding/json"
+// "fmt"
+// termbox "github.com/nsf/termbox-go"
+// . "github.com/sbrow/gorogue"
+// "testing"
 )
 
+/*
 func JSONTester(obj interface{}, out interface{}) error {
 	fmt.Println("pre ", obj)
 
@@ -32,6 +33,7 @@ func TestPlayerJSON(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+*/
 
 /*
 func TestNumbers(t *testing.T) {
@@ -58,7 +60,7 @@ func TestNumbers(t *testing.T) {
 	fmt.Println(args.Points[0])
 }
 */
-
+/*
 func TestObjectSprite(t *testing.T) {
 	p := NewPlayer("PlayerOne")
 	s := p.Sprite()
@@ -95,7 +97,7 @@ func TestActions(t *testing.T) {
 		fmt.Println(ma)
 	}
 }
-
+*/
 /*
 func TestMoreJSON(t *testing.T) {
 	n := NewPlayer("Player", 1)
