@@ -1,12 +1,22 @@
-package gorogue_test
+package gorogue
 
 import (
-// "encoding/json"
-// "fmt"
-// termbox "github.com/nsf/termbox-go"
-// . "github.com/sbrow/gorogue"
-// "testing"
+	// "encoding/json"
+	// "fmt"
+	// termbox "github.com/nsf/termbox-go"
+	// . "github.com/sbrow/gorogue"
+	"testing"
 )
+
+func TestDist(t *testing.T) {
+	a := Point{0, 0}
+	b := Point{3, 4}
+	d := Dist(a, b)
+	want := 5.00
+	if d != want {
+		t.Fatalf("Wanted: %.4f\nGot: %.4f\n", want, d)
+	}
+}
 
 /*
 func JSONTester(obj interface{}, out interface{}) error {

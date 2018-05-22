@@ -7,6 +7,7 @@ import (
 	"log"
 	// "net"
 	// "net/rpc/jsonrpc"
+	"math"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -68,4 +69,10 @@ func SetLog(name string) (*os.File, error) {
 	}
 	Log = log.New(f, "", log.LstdFlags)
 	return f, nil
+}
+
+func Dist(a, b Point) float64 {
+	x1, y1 := a.Ints()
+	x2, y2 := b.Ints()
+	return math.Sqrt(math.Pow(float64(x2-x1), 2) + math.Pow(float64(y2-y1), 2))
 }

@@ -26,8 +26,11 @@ import (
 // distinction being that NPCs are controlled by the World, and player
 // characters are controlled by Clients.
 type Actor interface {
-	Object             // All Actors are Objects.
-	Move(pos Pos) bool // Moves the Actor to the given position.
+	Object // All Actors are Objects.
+	Done()
+	Move(pos Pos) error // Moves the Actor to the given position.
+	Ready()
+	SetMap(m *Map)
 }
 
 // Client represents a connection to a local World.
@@ -65,12 +68,12 @@ type Object interface {
 	Name() string
 	ID() string
 	Index() int
-	MarshalJSON() ([]byte, error)
+	// MarshalJSON() ([]byte, error)
 	Pos() *Pos
 	SetIndex(i int)
-	SetPos(p *Pos)
+	SetPos(p Pos)
 	Sprite() termbox.Cell
-	UnmarshalJSON(data []byte) error
+	// UnmarshalJSON(data []byte) error
 }
 
 // TODO: Document
@@ -135,4 +138,9 @@ const (
 type UI interface {
 	Run()
 	Draw() error
+}
+
+type World interface {
+	HandleAction(a *Action, reply *string) error
+	Maps() []*Map
 }

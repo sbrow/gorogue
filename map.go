@@ -1,21 +1,22 @@
 package gorogue
 
 import (
+	"container/heap"
 	"errors"
-	"log"
 )
 
 // Map is a 2 dimensional plane containing tiles, objects and Actors. Each map will continue
 // to Tick, so long as it has at least one active connection. (Local or remote).
 type Map struct {
-	ID      uint8            // The index of this map in its World.
+	Index   uint8            // The index of this map in its World.
 	Height  int              // The number of vertical tiles.
 	Width   int              // The number of horizontal tiles.
 	Players map[string]Actor // Player characters on this Map.
 	Tiles   [][]Tile         // The Tiles that make this map up.
-	ticks   int              // The number of times this map has called Tick()
-	actions chan int
-	results chan bool
+	Ready   chan *Item
+	World   World
+	pq      priorityQueue
+	ticks   int
 }
 
 // NewMap creates a new, empty map with the given dimensions.
@@ -23,6 +24,8 @@ func NewMap(w, h int) *Map {
 	m := &Map{}
 	m.Width = w
 	m.Height = h
+	m.Ready = make(chan *Item)
+	m.pq = priorityQueue{}
 	for x := 0; x < w; x++ {
 		m.Tiles = append(m.Tiles, []Tile{})
 		for y := 0; y < h; y++ {
@@ -30,8 +33,6 @@ func NewMap(w, h int) *Map {
 		}
 	}
 	m.Players = map[string]Actor{}
-	m.actions = make(chan int)
-	m.results = make(chan bool)
 	return m
 }
 
@@ -54,7 +55,7 @@ func (m *Map) Move(a MoveAction) error {
 	actor := a.Target.(Actor)
 
 	// Assert that the Pos points to this Map.
-	if a.Pos.Map != m.ID {
+	if a.Pos.Map != m.Index {
 		return errors.New("Pointing to the wrong map.")
 	}
 
@@ -65,7 +66,11 @@ func (m *Map) Move(a MoveAction) error {
 	}
 
 	// If all our assertions are correct, move the Actor.
-	actor.SetPos(&a.Pos)
+	actor.Ready()
+	if err := actor.Move(a.Pos); err != nil {
+		return err
+	}
+	actor.Done()
 	return nil
 }
 
@@ -75,15 +80,21 @@ func (m *Map) Move(a MoveAction) error {
 // Currently, Actions are evaluated in FIFO order, meaning that Players' actions
 // will almost always be evaluated last.
 func (m *Map) Tick() {
-	queue := make([]int, len(m.Actors()))
-	for i := 0; i < len(queue); i++ {
-		queue[i] = <-m.actions
+	if len(m.Actors()) < 1 {
+		return
 	}
-	for _ = range queue {
-		m.results <- true
+	heap.Init(&m.pq)
+	for m.pq.Len() < len(m.Actors()) {
+		heap.Push(&m.pq, <-m.Ready)
+	}
+	for m.pq.Len() > 0 {
+		i := heap.Pop(&m.pq).(*Item)
+		Log.Println(i)
+		i.Ch <- "It's your turn!"
+		<-i.Ch
 	}
 	m.ticks++
-	log.Printf("Tick. (%d)\n=================================", m.ticks)
+	Log.Printf("Tick! (%d)\n=========================\n", m.ticks)
 	m.Tick()
 }
 
@@ -117,10 +128,4 @@ func (m *Map) TileSlice(x1, y1, x2, y2 int) [][]Tile {
 		}
 	}
 	return ret
-}
-
-// WaitForTurn blocks an actor until Tick gives them priority.
-func (m *Map) WaitForTurn(i int) bool {
-	m.actions <- i
-	return <-m.results
 }

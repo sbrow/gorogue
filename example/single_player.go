@@ -2,6 +2,7 @@ package main
 
 import (
 	. "github.com/sbrow/gorogue"
+	"github.com/sbrow/gorogue/assets"
 	"github.com/sbrow/gorogue/ui"
 )
 
@@ -13,9 +14,9 @@ func main() {
 	}
 	defer f.Close()
 
-	c := &ExampleClient{}
+	c := &assets.ExampleClient{}
 	c.Init()
-	ui.Standard(c, c.World.Maps[0])
+	ui.Standard(c, c.World.Maps()[0])
 
 	// Run the Client
 	ui.Run()

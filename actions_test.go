@@ -3,6 +3,7 @@ package gorogue_test
 import (
 	"fmt"
 	. "github.com/sbrow/gorogue"
+	"github.com/sbrow/gorogue/assets"
 	"testing"
 )
 
@@ -10,7 +11,7 @@ func TestMoveAction(t *testing.T) {
 	name := "Move"
 	caller := "Testing"
 	pos := Pos{Point{3, 5}, 0}
-	target := NewPlayer("Player")
+	target := assets.NewPlayer("Player")
 	action := NewAction(name, caller, target, pos)
 	moveAction := MoveAction{
 		Caller: caller,

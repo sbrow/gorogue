@@ -103,8 +103,7 @@ func Run() {
 		Draw()
 		action, err := engine.Input()
 		if err != nil {
-			// engine.Log.Println("error:", err)
-			log.Println("error: ", err)
+			engine.Log.Println("error: ", err)
 		} else if action != nil {
 			if std.client == nil {
 				return
