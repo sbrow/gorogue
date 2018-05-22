@@ -3,7 +3,6 @@ package gorogue
 import (
 	"container/heap"
 	"errors"
-	"log"
 	"math/rand"
 )
 
@@ -80,11 +79,12 @@ func (m *Map) Remove(str string) {
 	delete(m.Players, str)
 }
 
+// TODO: Fix spawns to occur at end of tick.
 func (m *Map) Spawn(sa *SpawnAction) error {
 	x := rand.Intn(m.Width)
 	y := rand.Intn(m.Height)
 	actor := m.World.Players()[sa.Caller]
-	m.Players["Player_1"] = actor
+	m.Players[sa.Caller] = actor
 	actor.SetMap(m)
 	actor.SetPt(NewPt(x, y))
 	if len(m.Players) == 1 {
@@ -108,13 +108,19 @@ func (m *Map) Tick() {
 	}
 	for m.pq.Len() > 0 {
 		i := heap.Pop(&m.pq).(*Item)
-		log.Println(i)
 		i.Ch <- "It's your turn!"
 		<-i.Ch
 	}
 	m.ticks++
-	log.Printf("Tick! (%d)\n=========================\n", m.ticks)
+	for _, a := range m.Actors() {
+		Log.Println(a)
+	}
+	Log.Printf("Tick! (%d)\n=========================\n", m.ticks)
 	m.Tick()
+}
+
+func (m *Map) Ticked() {
+
 }
 
 // TileSlice returns the contents of all tiles within the bounds of

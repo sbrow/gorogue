@@ -24,13 +24,16 @@ func (e *ExampleWorld) NewMap(w, h int) {
 	e.maps = append(e.maps, m)
 }
 
-func (w *ExampleWorld) HandleAction(a *Action, reply *string) error {
+func (e *ExampleWorld) HandleAction(a *Action, reply *string) error {
+	for k, v := range e.players {
+		Log.Printf("[%s]=%v\n", k, v)
+	}
 	var err error
 	switch a.Name {
 	case "Move":
-		err = w.Move(a)
+		err = e.Move(a)
 	case "Spawn":
-		err = w.Spawn(a)
+		err = e.Spawn(a)
 	}
 	if err != nil {
 		msg := err.Error()

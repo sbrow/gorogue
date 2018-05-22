@@ -21,15 +21,15 @@ import (
 // or NewClient will overwrite the previous client.
 func NewRemoteClient(c RemoteClient, host, port string) error {
 	// Disconnect the previous session, if any
-	if StdConn != nil {
-		switch StdConn.(type) {
+	if stdConn != nil {
+		switch stdConn.(type) {
 		case RemoteClient:
-			StdConn.(RemoteClient).Disconnect()
+			stdConn.(RemoteClient).Disconnect()
 		}
-		StdConn = nil
+		stdConn = nil
 	}
-	StdConn = c
-	remoteConn := StdConn.(RemoteClient)
+	stdConn = c
+	remoteConn := stdConn.(RemoteClient)
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s%s", host, port))
 	if err != nil {
 		return err
@@ -58,6 +58,16 @@ func NewRemoteClient(c RemoteClient, host, port string) error {
 	s.HandleRequests()
 }*/
 
+func Dist(a, b Point) float64 {
+	x1, y1 := a.Ints()
+	x2, y2 := b.Ints()
+	return math.Sqrt(math.Pow(float64(x2-x1), 2) + math.Pow(float64(y2-y1), 2))
+}
+
+func HandleAction(a *Action) error {
+	return stdConn.HandleAction(a)
+}
+
 // SetLog sets the output for the standard Logger.
 func SetLog(name string) (*os.File, error) {
 	_, filename, _, ok := runtime.Caller(0)
@@ -70,10 +80,4 @@ func SetLog(name string) (*os.File, error) {
 	}
 	Log = log.New(f, "", log.LstdFlags)
 	return f, nil
-}
-
-func Dist(a, b Point) float64 {
-	x1, y1 := a.Ints()
-	x2, y2 := b.Ints()
-	return math.Sqrt(math.Pow(float64(x2-x1), 2) + math.Pow(float64(y2-y1), 2))
 }

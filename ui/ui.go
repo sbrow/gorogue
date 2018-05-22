@@ -5,7 +5,6 @@ package ui
 import (
 	termbox "github.com/nsf/termbox-go"
 	engine "github.com/sbrow/gorogue"
-	"log"
 )
 
 var std *ui
@@ -32,7 +31,6 @@ func New(w, h int) {
 // Add adds a UIElement to this UI.
 func Add(name string, e UIElement) UIElement {
 	e.SetBounds(*InnerBounds())
-	log.Println(*InnerBounds())
 	std.elements[name] = e
 	return std.elements[name]
 }
@@ -61,13 +59,14 @@ func Draw() error {
 	return nil
 }
 
-// func Init() {
-// 	err := termbox.Init()
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	Draw()
-// }
+// Used for testing.
+func Init() {
+	err := termbox.Init()
+	if err != nil {
+		panic(err)
+	}
+	Draw()
+}
 
 func InnerBounds() *Bounds {
 	bounds := OuterBounds()
@@ -103,12 +102,9 @@ func Run() {
 		}
 		action, err := engine.Input()
 		if err != nil {
-			log.Println("error: err")
+			engine.Log.Println("error: err")
 		} else if action != nil {
-			if engine.StdConn == nil {
-				panic("UI has no client!")
-			}
-			err := engine.StdConn.HandleAction(action)
+			err := engine.HandleAction(action)
 			if err != nil {
 				if err.Error() == "Leaving..." { // TODO: Fix
 					return

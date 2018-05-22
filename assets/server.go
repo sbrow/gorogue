@@ -3,7 +3,6 @@ package assets
 import (
 	"fmt"
 	. "github.com/sbrow/gorogue"
-	"log"
 	"net"
 	"net/rpc"
 	"net/rpc/jsonrpc"
@@ -28,7 +27,7 @@ func NewServer(port string) {
 }
 */
 func (e *ExampleServer) Disconnect(args *string, reply *string) error {
-	log.Printf("%s Disconnected.\n", *args)
+	Log.Printf("%s Disconnected.\n", *args)
 	actor := e.players[*args]
 	actor.Map().Remove(*args)
 	/*	for i, conn := range e.conns {
@@ -52,12 +51,13 @@ func (e *ExampleServer) HandleRequests() {
 	if err != nil {
 		panic(err)
 	}
-	log.Println("Waiting for players...")
+	Log.Println("Server started on port:", e.port)
+	Log.Println("Waiting for players...")
 	for {
 		if conn, err := l.Accept(); err != nil {
 			panic(err)
 		} else {
-			log.Printf("%s Connected.", conn.RemoteAddr())
+			Log.Printf("%s Connected.", conn.RemoteAddr())
 			addr := fmt.Sprint(conn.RemoteAddr())
 			conn.Write([]byte(addr))
 			// e.conns = append(e.conns, addr)

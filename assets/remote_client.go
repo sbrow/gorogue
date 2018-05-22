@@ -4,7 +4,6 @@ import (
 	"errors"
 	. "github.com/sbrow/gorogue"
 	"github.com/sbrow/gorogue/ui"
-	"log"
 	"net/rpc"
 )
 
@@ -22,14 +21,14 @@ func (e *ExampleRemoteClient) Disconnect() {
 	var reply *string
 	addr := e.addr
 	if err := e.client.Call("Server.Disconnect", &addr, &reply); err != nil {
-		log.Println("error (d/c):", err)
+		Log.Println("error (d/c):", err)
 		return
 	}
 	if err := e.client.Close(); err != nil {
-		log.Println("error (d/c):", err)
+		Log.Println("error (d/c):", err)
 		return
 	}
-	log.Println("Disconnected from server.")
+	Log.Println("Disconnected from server.")
 }
 
 func (e *ExampleRemoteClient) HandleAction(a *Action) error {

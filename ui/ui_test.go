@@ -8,13 +8,13 @@ import (
 )
 
 func TestRun(t *testing.T) {
-	New(nil, 3, 3)
+	New(3, 3)
 	go Run()
 	termbox.Interrupt()
 }
 
 func TestUIBorder(t *testing.T) {
-	New(nil, 3, 3)
+	New(3, 3)
 	SetBorder(LightBorder, true)
 	Init()
 
@@ -32,7 +32,8 @@ func TestUIBorder(t *testing.T) {
 }
 
 func TestBorderSet_Invisible(t *testing.T) {
-	New(nil, 3, 3)
+	New(3, 3)
+
 	SetBorder(LightBorder, false)
 	Init()
 
@@ -51,7 +52,7 @@ func TestBorderSet_Invisible(t *testing.T) {
 func TestPrint(t *testing.T) {
 	want := "Two   \n!ines!\n"
 
-	New(nil, 6, 2)
+	New(6, 2)
 	Init()
 	Print(0, 0, "Two\nLines!\r!")
 	runes, err := PrintScreen()
@@ -68,7 +69,7 @@ func TestPrint(t *testing.T) {
 func TestPrintRaw(t *testing.T) {
 	want := "Two Lines! !\n"
 
-	New(nil, 12, 1)
+	New(12, 1)
 	Init()
 	PrintRaw(0, 0, "Two\nLines!\r!")
 	runes, err := PrintScreen()
@@ -110,7 +111,8 @@ func TestFullScreen(t *testing.T) {
 │................................................................................│
 └────────────────────────────────────────────────────────────────────────────────┘
 `
-	Standard(nil, engine.NewMap(80, 24, "Map"))
+	tiles := engine.NewMap(80, 24).AllTiles()
+	Standard(&tiles)
 	Init()
 	runes, err := PrintScreen()
 	if err != nil {
@@ -125,7 +127,7 @@ func TestFullScreen(t *testing.T) {
 
 /*
 func TestTextField(t *testing.T) {
-	Standard(nil, engine.NewMap(80, 24, "Map"))
+	Standard(engine.NewMap(80, 24, "Map"))
 	Init()
 	w, h := Size()
 	v := NewTextField("cmds", NewBounds(0, h-3, w, h-1))
