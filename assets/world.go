@@ -2,25 +2,24 @@ package assets
 
 import (
 	"errors"
-	"fmt"
 	. "github.com/sbrow/gorogue"
 	"math/rand"
 )
 
 type ExampleWorld struct {
 	maps    []*Map
-	Players map[string]Actor
+	players map[string]Actor
 }
 
 func NewWorld() *ExampleWorld {
 	w := &ExampleWorld{}
 	w.maps = []*Map{}
-	w.Players = map[string]Actor{}
+	w.players = map[string]Actor{}
 	return w
 }
 
 func (e *ExampleWorld) NewMap(w, h int) {
-	m := NewMap(5, 5)
+	m := NewMap(w, h)
 	m.World = e
 	e.maps = append(e.maps, m)
 }
@@ -37,7 +36,8 @@ func (w *ExampleWorld) HandleAction(a *Action, reply *string) error {
 		msg := err.Error()
 		reply = &msg
 	}
-	return err
+	reply = nil
+	return nil
 }
 
 func (w *ExampleWorld) Maps() []*Map {
@@ -50,10 +50,14 @@ func (w *ExampleWorld) Move(a *Action) error {
 		//TODO: ErrorWrongAction or something.
 		return errors.New("ErrorWrongAction")
 	}
-	caller := w.Players[a.Caller]
+	caller := w.players[a.Caller]
 	ma.Target = caller
 	p := caller.Pos()
 	switch a.Args[0].(type) {
+	case float64:
+		pt := Direction(uint8(a.Args[0].(float64))).Point()
+		p.X += pt.X
+		p.Y += pt.Y
 	case Direction:
 		pt := a.Args[0].(Direction).Point()
 		p.X += pt.X
@@ -64,32 +68,20 @@ func (w *ExampleWorld) Move(a *Action) error {
 		return errors.New("Passed wrong args to Client.Move()")
 	}
 	ma.Pos = *p
-	Log.Println(a)
 	w.maps[ma.Pos.Map].Move(ma)
 	return nil
 }
 
+func (e *ExampleWorld) Players() map[string]Actor {
+	return e.players
+}
 func (w *ExampleWorld) Spawn(a *Action) error {
 	sa := &SpawnAction{}
 	sa.Caller = a.Caller
 	sa.Actor = a.Args[0].(Actor)
 
 	m := rand.Intn(len(w.maps))
-	x := rand.Intn(w.maps[m].Width)
-	y := rand.Intn(w.maps[m].Height)
-	fmt.Println(x, y, m)
-	p := NewPos(x, y, m)
+	w.players[sa.Caller] = sa.Actor
 
-	w.Players[sa.Caller] = sa.Actor
-	actor := w.Players[sa.Caller]
-	Map := w.maps[m]
-	Log.Println(w.maps[m].World)
-	Map.Players["Player_1"] = actor
-	actor.SetMap(Map)
-	actor.SetPos(*p)
-	if len(Map.Players) == 1 {
-		go Map.Tick()
-	}
-	Log.Println(sa.Caller, w.Players[sa.Caller])
-	return nil
+	return w.maps[m].Spawn(sa)
 }

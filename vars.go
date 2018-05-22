@@ -8,7 +8,7 @@ import (
 // Log is the standard Logger for gorogue.
 var Log *log.Logger
 
-var stdConn Client
+var StdConn Client
 
 var (
 	DefaultPlayer = termbox.Cell{'@', termbox.ColorWhite, termbox.ColorBlack}

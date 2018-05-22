@@ -3,10 +3,10 @@ package assets
 import (
 	"errors"
 	. "github.com/sbrow/gorogue"
+	"log"
 )
 
 type ExampleClient struct {
-	UI    UI
 	World *ExampleWorld
 }
 
@@ -39,6 +39,7 @@ func (c *ExampleClient) Init() error {
 	// Add a map to our world.
 	c.World.NewMap(5, 5)
 
+	log.Println("Here!")
 	a := NewAction("Spawn", c.Addr(), NewPlayer("Player"))
 	if err := c.HandleAction(a); err != nil {
 		Log.Println(err)
@@ -47,5 +48,5 @@ func (c *ExampleClient) Init() error {
 }
 
 func (c *ExampleClient) Player() Actor {
-	return c.World.Players[c.Addr()]
+	return c.World.Players()[c.Addr()]
 }

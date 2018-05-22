@@ -10,7 +10,7 @@ type View struct {
 	// border *Border
 	bounds Bounds
 	origin engine.Point
-	Map    *engine.Map // The Map data is drawn from.
+	Tiles  *[][]engine.Tile
 }
 
 // NewView returns a newly created view.
@@ -20,10 +20,10 @@ type View struct {
 //
 // anchor is the location in the UI where
 // you want this view to be placed.
-func NewView(origin engine.Point, m *engine.Map) *View {
+func NewView(origin engine.Point, t *[][]engine.Tile) *View {
 	v := &View{
 		origin: origin,
-		Map:    m,
+		Tiles:  t,
 	}
 	return v
 }
@@ -52,14 +52,15 @@ func (v *View) Draw() error {
 	// bounds := v.Bounds()
 	anchor := v.bounds[0]
 
-	// Get tiles from the map
-	tiles := v.Tiles()
-
 	// Draw the tiles.
 	var x, y int
-	for y = 0; y < len(tiles[0]); y++ {
-		for x = 0; x < len(tiles); x++ {
-			SetCell(x+anchor.X, y+anchor.Y, termbox.Cell(tiles[x][y].Sprite))
+	for y = 0; y < len((*v.Tiles)[0]); y++ {
+		for x = 0; x < len(*v.Tiles); x++ {
+			if x < 0 || x > v.Width()-1 || y < 0 || y > v.Height()-1 {
+				SetCell(x+anchor.X, y+anchor.Y, engine.BlankTile.Sprite)
+			} else {
+				SetCell(x+anchor.X, y+anchor.Y, termbox.Cell((*v.Tiles)[x][y].Sprite))
+			}
 		}
 	}
 	return nil
@@ -81,14 +82,14 @@ func (v *View) Size() (w, h int) {
 	return v.Bounds().Size()
 }
 
-func (v *View) Tiles() [][]engine.Tile {
-	b := v.Bounds()
-	x1, y1 := v.origin.X, v.origin.Y
-	x2, y2 := b[1].Ints()
-	x2 += x1 - 1
-	y2 += y1 - 1
-	return v.Map.TileSlice(x1, y1, x2, y2)
-}
+// func (v *View) Tiles() [][]engine.Tile {
+// 	b := v.Bounds()
+// 	x1, y1 := v.origin.X, v.origin.Y
+// 	x2, y2 := b[1].Ints()
+// 	x2 += x1 - 1
+// 	y2 += y1 - 1
+// 	return v.Map.TileSlice(x1, y1, x2, y2)
+// }
 
 func (v *View) Type() UIElementType {
 	return UITypeView

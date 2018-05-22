@@ -3,6 +3,8 @@ package gorogue
 import (
 	"container/heap"
 	"errors"
+	"log"
+	"math/rand"
 )
 
 // Map is a 2 dimensional plane containing tiles, objects and Actors. Each map will continue
@@ -67,10 +69,27 @@ func (m *Map) Move(a MoveAction) error {
 
 	// If all our assertions are correct, move the Actor.
 	actor.Ready()
-	if err := actor.Move(a.Pos); err != nil {
+	if err := actor.Move(&a.Pos); err != nil {
 		return err
 	}
 	actor.Done()
+	return nil
+}
+
+func (m *Map) Remove(str string) {
+	delete(m.Players, str)
+}
+
+func (m *Map) Spawn(sa *SpawnAction) error {
+	x := rand.Intn(m.Width)
+	y := rand.Intn(m.Height)
+	actor := m.World.Players()[sa.Caller]
+	m.Players["Player_1"] = actor
+	actor.SetMap(m)
+	actor.SetPt(NewPt(x, y))
+	if len(m.Players) == 1 {
+		go m.Tick()
+	}
 	return nil
 }
 
@@ -89,12 +108,12 @@ func (m *Map) Tick() {
 	}
 	for m.pq.Len() > 0 {
 		i := heap.Pop(&m.pq).(*Item)
-		Log.Println(i)
+		log.Println(i)
 		i.Ch <- "It's your turn!"
 		<-i.Ch
 	}
 	m.ticks++
-	Log.Printf("Tick! (%d)\n=========================\n", m.ticks)
+	log.Printf("Tick! (%d)\n=========================\n", m.ticks)
 	m.Tick()
 }
 

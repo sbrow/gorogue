@@ -18,7 +18,7 @@ package gorogue
 
 import (
 	termbox "github.com/nsf/termbox-go"
-	// "net/rpc"
+	"net/rpc"
 )
 
 // Actor is an object that can move. There are two main kinds of actors:
@@ -28,7 +28,7 @@ import (
 type Actor interface {
 	Object // All Actors are Objects.
 	Done()
-	Move(pos Pos) error // Moves the Actor to the given position.
+	Move(pos *Pos) error // Moves the Actor to the given position.
 	Ready()
 	SetMap(m *Map)
 }
@@ -69,21 +69,24 @@ type Object interface {
 	ID() string
 	Index() int
 	// MarshalJSON() ([]byte, error)
+	Map() *Map
 	Pos() *Pos
 	SetIndex(i int)
-	SetPos(p Pos)
+	SetPt(pt *Point)
+	// SetPos(p *Pos)
 	Sprite() termbox.Cell
 	// UnmarshalJSON(data []byte) error
 }
 
 // TODO: Document
-/*type RemoteClient interface {
+type RemoteClient interface {
 	Client
-	Connect(host, port string)
+	// Connect(host, port string)
 	Disconnect()
+	Run()
 	SetAddr(addr string)
 	SetRPC(*rpc.Client)
-}*/
+}
 
 // Server is a world that accepts RemoteClient connections over TCP/IP.
 //
@@ -96,16 +99,14 @@ type Object interface {
 // 	- the method's second argument is a pointer.
 //	- the method has return type error.
 // See the net/rpc package for more details.
-/*type Server interface {
-	// World
+type Server interface {
+	World
 	Conns() []string
-	HandleAction(a *Action, reply *string) error
 	HandleRequests()
 	// Ping(addr *string, reply *Pong)
 	Port() string
 	SetPort(port string)
 }
-*/
 
 // Tile is square on the Map. It is the smallest increment a Map can be broken
 // down into.
@@ -143,4 +144,5 @@ type UI interface {
 type World interface {
 	HandleAction(a *Action, reply *string) error
 	Maps() []*Map
+	Players() map[string]Actor
 }

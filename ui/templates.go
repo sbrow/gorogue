@@ -4,7 +4,7 @@ import engine "github.com/sbrow/gorogue"
 
 // Standard returns a minimum terminal sized UI (80x24),
 // with one view into a map.
-func Standard(c engine.Client, m *engine.Map) {
+func Standard(m *[][]engine.Tile) {
 
 	// Point to start pulling map data from.
 	origin := engine.Point{0, 0}
@@ -13,7 +13,7 @@ func Standard(c engine.Client, m *engine.Map) {
 	uiSize := engine.Point{82, 26}
 
 	// Initialize UI
-	New(c, uiSize.X, uiSize.Y)
+	New(uiSize.X, uiSize.Y)
 	SetBorder(LightBorder, true)
 
 	// Add a view of the map to our UI.

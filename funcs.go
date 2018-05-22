@@ -1,13 +1,13 @@
 package gorogue
 
 import (
-	// "bytes"
+	"bytes"
 	"errors"
-	// "fmt"
+	"fmt"
 	"log"
-	// "net"
-	// "net/rpc/jsonrpc"
 	"math"
+	"net"
+	"net/rpc/jsonrpc"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -19,17 +19,17 @@ import (
 //
 // Each process can have only one active Client, meaning each call to NewRemoteClient
 // or NewClient will overwrite the previous client.
-/*func NewRemoteClient(c RemoteClient, host, port string) error {
+func NewRemoteClient(c RemoteClient, host, port string) error {
 	// Disconnect the previous session, if any
-	if stdConn != nil {
-		switch stdConn.(type) {
+	if StdConn != nil {
+		switch StdConn.(type) {
 		case RemoteClient:
-			stdConn.(RemoteClient).Disconnect()
+			StdConn.(RemoteClient).Disconnect()
 		}
-		stdConn = nil
+		StdConn = nil
 	}
-	remoteConn := stdConn.(RemoteClient)
-	remoteConn = c
+	StdConn = c
+	remoteConn := StdConn.(RemoteClient)
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s%s", host, port))
 	if err != nil {
 		return err
@@ -46,9 +46,10 @@ import (
 	if err := remoteConn.Init(); err != nil {
 		panic(err)
 	}
+	remoteConn.Init()
 	remoteConn.Run()
 	return nil
-}*/
+}
 
 // NewServer starts a server on the given port. Servers are used to control
 // the World in an online game.

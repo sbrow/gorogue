@@ -2,6 +2,7 @@ package assets
 
 import (
 	// "encoding/json"
+	"errors"
 	"fmt"
 	termbox "github.com/nsf/termbox-go"
 	. "github.com/sbrow/gorogue"
@@ -58,7 +59,12 @@ func (p *Player) Index() int {
 	return json.Marshal(p.JSON())
 }
 */
-func (p *Player) Move(pos Pos) error {
+
+func (p *Player) Map() *Map {
+	return p.mp
+}
+
+func (p *Player) Move(pos *Pos) error {
 	p.SetPos(pos)
 	return nil
 }
@@ -92,9 +98,17 @@ func (p *Player) SetMap(m *Map) {
 	p.mp = m
 }
 
-func (p *Player) SetPos(pos Pos) {
-	p.pt = &pos.Point
+func (p *Player) SetPos(pos *Pos) error {
+	if p.mp == nil {
+		return errors.New("Player does not have a map!")
+	}
 	p.mp = p.mp.World.Maps()[pos.Map]
+	p.pt = &pos.Point
+	return nil
+}
+
+func (p *Player) SetPt(pt *Point) {
+	p.pt = pt
 }
 
 func (p *Player) Sprite() termbox.Cell {

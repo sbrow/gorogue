@@ -46,6 +46,10 @@ type Point struct {
 	Y int
 }
 
+func NewPt(x, y int) *Point {
+	return &Point{X: x, Y: y}
+}
+
 // Add sets the Point equal to the geometric sum of it and pt.
 func (p *Point) Add(pt Point) {
 	p.X += pt.X

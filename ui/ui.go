@@ -12,16 +12,14 @@ var std *ui
 
 // UI holds everything a player sees in game.
 type ui struct {
-	border   *Border // The UI's border (if any).
-	client   engine.Client
+	border   *Border              // The UI's border (if any).
 	elements map[string]UIElement // Views contained in this UI.
 	size     engine.Point
 }
 
 // New creates a new UI with a given size.
-func New(client engine.Client, w, h int) {
+func New(w, h int) {
 	std = &ui{}
-	std.client = client
 	std.border = nil
 	if w < 1 || h < 1 {
 		std.size = engine.Point{-1, -1}
@@ -63,13 +61,13 @@ func Draw() error {
 	return nil
 }
 
-func Init() {
-	err := termbox.Init()
-	if err != nil {
-		panic(err)
-	}
-	Draw()
-}
+// func Init() {
+// 	err := termbox.Init()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	Draw()
+// }
 
 func InnerBounds() *Bounds {
 	bounds := OuterBounds()
@@ -100,17 +98,22 @@ func Run() {
 	termbox.SetOutputMode(termbox.Output256)
 
 	for {
-		Draw()
+		if err := Draw(); err != nil {
+			panic(err)
+		}
 		action, err := engine.Input()
 		if err != nil {
-			engine.Log.Println("error: ", err)
+			log.Println("error: err")
 		} else if action != nil {
-			if std.client == nil {
-				return
+			if engine.StdConn == nil {
+				panic("UI has no client!")
 			}
-			err := std.client.HandleAction(action)
+			err := engine.StdConn.HandleAction(action)
 			if err != nil {
-				return
+				if err.Error() == "Leaving..." { // TODO: Fix
+					return
+				}
+				panic(err)
 			}
 		}
 	}
