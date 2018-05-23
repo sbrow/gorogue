@@ -136,11 +136,6 @@ const (
 	Tiles TileSet = " .@#><"
 )
 
-type UI interface {
-	Run()
-	Draw() error
-}
-
 type World interface {
 	HandleAction(a *Action, reply *string) error
 	Maps() []*Map

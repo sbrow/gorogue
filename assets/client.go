@@ -39,7 +39,6 @@ func (c *ExampleClient) Init() error {
 	// Add a map to our world.
 	c.World.NewMap(5, 5)
 
-	log.Println("Here!")
 	a := NewAction("Spawn", c.Addr(), NewPlayer("Player"))
 	if err := c.HandleAction(a); err != nil {
 		Log.Println(err)

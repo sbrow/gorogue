@@ -2,15 +2,15 @@ package ui
 
 import (
 	termbox "github.com/nsf/termbox-go"
-	engine "github.com/sbrow/gorogue"
+	. "github.com/sbrow/gorogue"
 )
 
 // View is a window into a Map. Views can be any size.
 type View struct {
 	// border *Border
 	bounds Bounds
-	origin engine.Point
-	Tiles  *[][]engine.Tile
+	origin Point
+	Tiles  *[][]Tile
 }
 
 // NewView returns a newly created view.
@@ -20,7 +20,7 @@ type View struct {
 //
 // anchor is the location in the UI where
 // you want this view to be placed.
-func NewView(origin engine.Point, t *[][]engine.Tile) *View {
+func NewView(origin Point, t *[][]Tile) *View {
 	v := &View{
 		origin: origin,
 		Tiles:  t,
@@ -36,12 +36,12 @@ func (v *View) Bounds() Bounds {
 	return v.border
 }*/
 
-func (v *View) Center() engine.Point {
-	return engine.Point{v.Width()/2 - 1, v.Height()/2 - 1}
-	// return engine.Point{v.Width() / 2, v.Height() / 2}
+func (v *View) Center() Point {
+	return Point{v.Width()/2 - 1, v.Height()/2 - 1}
+	// return Point{v.Width() / 2, v.Height() / 2}
 }
 
-func (v *View) CenterView(p engine.Point) {
+func (v *View) CenterView(p Point) {
 	p.Sub(v.Center())
 	v.origin = p
 }
@@ -57,7 +57,7 @@ func (v *View) Draw() error {
 	for y = 0; y < len((*v.Tiles)[0]); y++ {
 		for x = 0; x < len(*v.Tiles); x++ {
 			if x < 0 || x > v.Width()-1 || y < 0 || y > v.Height()-1 {
-				SetCell(x+anchor.X, y+anchor.Y, engine.BlankTile.Sprite)
+				SetCell(x+anchor.X, y+anchor.Y, BlankTile.Sprite)
 			} else {
 				SetCell(x+anchor.X, y+anchor.Y, termbox.Cell((*v.Tiles)[x][y].Sprite))
 			}
@@ -66,7 +66,7 @@ func (v *View) Draw() error {
 	return nil
 }
 
-func (v *View) Origin() engine.Point {
+func (v *View) Origin() Point {
 	return v.origin
 }
 
@@ -82,7 +82,7 @@ func (v *View) Size() (w, h int) {
 	return v.Bounds().Size()
 }
 
-// func (v *View) Tiles() [][]engine.Tile {
+// func (v *View) Tiles() [][]Tile {
 // 	b := v.Bounds()
 // 	x1, y1 := v.origin.X, v.origin.Y
 // 	x2, y2 := b[1].Ints()

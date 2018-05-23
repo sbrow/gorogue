@@ -1,16 +1,16 @@
 package ui
 
-import engine "github.com/sbrow/gorogue"
+import . "github.com/sbrow/gorogue"
 
 // Standard returns a minimum terminal sized UI (80x24),
 // with one view into a map.
-func Standard(m *[][]engine.Tile) {
+func Standard(m *[][]Tile) {
 
 	// Point to start pulling map data from.
-	origin := engine.Point{0, 0}
+	origin := Point{0, 0}
 
 	// Size of our UI.
-	uiSize := engine.Point{82, 26}
+	uiSize := Point{82, 26}
 
 	// Initialize UI
 	New(uiSize.X, uiSize.Y)

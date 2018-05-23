@@ -4,7 +4,7 @@ package ui
 
 import (
 	termbox "github.com/nsf/termbox-go"
-	engine "github.com/sbrow/gorogue"
+	. "github.com/sbrow/gorogue"
 )
 
 var std *ui
@@ -13,7 +13,7 @@ var std *ui
 type ui struct {
 	border   *Border              // The UI's border (if any).
 	elements map[string]UIElement // Views contained in this UI.
-	size     engine.Point
+	size     Point
 }
 
 // New creates a new UI with a given size.
@@ -21,9 +21,9 @@ func New(w, h int) {
 	std = &ui{}
 	std.border = nil
 	if w < 1 || h < 1 {
-		std.size = engine.Point{-1, -1}
+		std.size = Point{-1, -1}
 	} else {
-		std.size = engine.Point{w - 1, h - 1}
+		std.size = Point{w - 1, h - 1}
 	}
 	std.elements = map[string]UIElement{}
 }
@@ -82,7 +82,7 @@ func OuterBounds() *Bounds {
 	// if !std.scales {
 	bounds[1] = std.size
 	// } else {
-	// 		bounds[1] = engine.NewPoint(termbox.Size())
+	// 		bounds[1] = NewPoint(termbox.Size())
 	// }
 	return &bounds
 }
@@ -100,11 +100,11 @@ func Run() {
 		if err := Draw(); err != nil {
 			panic(err)
 		}
-		action, err := engine.Input()
+		action, err := Input()
 		if err != nil {
-			engine.Log.Println("error: err")
+			Log.Println("error: err")
 		} else if action != nil {
-			err := engine.HandleAction(action)
+			err := HandleAction(action)
 			if err != nil {
 				if err.Error() == "Leaving..." { // TODO: Fix
 					return

@@ -2,23 +2,23 @@ package ui
 
 import (
 	"fmt"
-	engine "github.com/sbrow/gorogue"
+	. "github.com/sbrow/gorogue"
 )
 
 // Bounds hold the top left-most and bottom right-most points of a UIElement
-type Bounds [2]engine.Point
+type Bounds [2]Point
 
 func NewBounds(x1, y1, x2, y2 int) Bounds {
-	return Bounds{engine.Point{x1, y1}, engine.Point{x2, y2}}
+	return Bounds{Point{x1, y1}, Point{x2, y2}}
 }
 
 /*
 func (b *Bounds) Grow() {
-	b[0].Shift(engine.NorthWest)
-	b[1].Shift(engine.SouthEast)
+	b[0].Shift(NorthWest)
+	b[1].Shift(SouthEast)
 }
 
-func (b *Bounds) Shift(d engine.Direction) {
+func (b *Bounds) Shift(d Direction) {
 	b[0].Shift(d)
 	b[1].Shift(d)
 }
@@ -30,8 +30,8 @@ func (b Bounds) Size() (w, h int) {
 }
 
 func (b *Bounds) Shrink() {
-	b[0].Shift(engine.SouthEast)
-	b[1].Shift(engine.NorthWest)
+	b[0].Shift(SouthEast)
+	b[1].Shift(NorthWest)
 }
 
 func (b *Bounds) String() string {

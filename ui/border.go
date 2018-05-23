@@ -2,7 +2,7 @@ package ui
 
 import (
 	termbox "github.com/nsf/termbox-go"
-	engine "github.com/sbrow/gorogue"
+	. "github.com/sbrow/gorogue"
 )
 
 // BorderSet is a set of characters that can be used to border a UI element.
@@ -16,7 +16,7 @@ import (
 // TODO: Add remaining borders.
 //
 // TODO: Test
-type BorderSet engine.TileSet
+type BorderSet TileSet
 
 const (
 	LightBorder      BorderSet = "─│┌┬┐├┼┤└┴┘"

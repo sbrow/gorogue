@@ -10,7 +10,7 @@ import (
 
 type Player struct {
 	name   string
-	index  int
+	id     int
 	mp     *Map
 	ready  bool
 	init   int
@@ -23,7 +23,7 @@ type Player struct {
 func NewPlayer(name string) *Player {
 	p := &Player{}
 	p.name = name
-	p.index = 1
+	p.id = 1
 	p.pt = nil
 	p.sprite = DefaultPlayer
 	p.ch = make(chan string)
@@ -37,17 +37,17 @@ func (p *Player) Done() {
 }
 
 func (p *Player) ID() string {
-	return fmt.Sprintf("%s_%d", p.name, p.index)
+	return fmt.Sprintf("%s_%d", p.name, p.id)
 }
 
 func (p *Player) Index() int {
-	return p.index
+	return p.id
 }
 
 /*func (p *Player) JSON() PlayerJSON {
 	return PlayerJSON{
 		Name:   p.name,
-		Index:  p.index,
+		Index:  p.id,
 		Pos:    p.pt,
 		Sprite: p.sprite,
 		Type:   "Player",
@@ -90,7 +90,7 @@ func (p *Player) Ready() {
 
 func (p *Player) SetIndex(i int) {
 	if i > 0 {
-		p.index = i
+		p.id = i
 	}
 }
 
@@ -122,7 +122,7 @@ func (p *Player) Sprite() termbox.Cell {
 		return err
 	}
 	p.name = tmp.Name
-	p.index = tmp.Index
+	p.id = tmp.Index
 	p.pt = tmp.Pos
 	p.sprite = tmp.Sprite
 	return nil
