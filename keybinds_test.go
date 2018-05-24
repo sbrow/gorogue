@@ -8,15 +8,29 @@ import (
 	"testing"
 )
 
-func TestSaveKeybinds(t *testing.T) {
-	var bind *KeyBind
-	f, err := os.Create("keybinds.json")
+func TestLoadSaveKeybinds(t *testing.T) {
+	want := `[
+	{"key":"h","action":"Move","args":{"string":"West"}},
+	{"key":"k","action":"Move","args":{"string":"North"}},
+	{"key":"n","action":"Move","args":{"string":"SouthEast"}},
+	{"key":"b","action":"Move","args":{"string":"SouthWest"}},
+	{"key":"esc","action":"Quit"},
+	{"key":"y","action":"Move","args":{"string":"NorthWest"}},
+	{"key":"j","action":"Move","args":{"string":"South"}},
+	{"key":"u","action":"Move","args":{"string":"NorthEast"}},
+	{"key":"l","action":"Move","args":{"string":"East"}}
+]`
+	filename := "keybinds_test.json"
+
+	f, err := os.Create(filename)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer f.Close()
+
 	f.WriteString("[\n")
 	i := 0
+	var bind *KeyBind
 	for k, v := range Keybinds {
 		f.WriteString("\t")
 		bind = &KeyBind{k, v}
@@ -32,23 +46,14 @@ func TestSaveKeybinds(t *testing.T) {
 		f.WriteString("\n")
 	}
 	f.WriteString("]")
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(data) != want {
+		fmt.Printf("Wanted:\"\n%s\"\nGot:\"\n%s\"\n", want, string(data))
+	}
 }
-
-// func TestLoadKeybinds(t *testing.T) {
-// 	var binds []KeyBind
-// 	data, err := ioutil.ReadFile("keybinds.json")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if err := json.Unmarshal(data, &binds); err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	keybinds := map[Key]Action{}
-// 	for _, bind := range binds {
-// 		keybinds[bind.Key] = bind.Action
-// 	}
-// 	fmt.Println(keybinds)
-// }
 
 func TestKeybindJSON(t *testing.T) {
 	action := *NewAction("Move", "Client", South)

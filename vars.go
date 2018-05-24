@@ -2,11 +2,7 @@ package gorogue
 
 import (
 	termbox "github.com/nsf/termbox-go"
-	"log"
 )
-
-// Log is the standard Logger for gorogue.
-var Log *log.Logger
 
 var stdConn Client
 

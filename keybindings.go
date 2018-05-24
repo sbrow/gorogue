@@ -6,8 +6,17 @@ import (
 	termbox "github.com/nsf/termbox-go"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"reflect"
 )
+
+func init() {
+	fmt.Println(os.Getwd())
+	fmt.Println(os.Hostname())
+	if err := LoadKeyBinds(filepath.Join(basePath, "keybinds.json")); err != nil {
+		panic(err)
+	}
+}
 
 // Commands stores all currently bound commands.
 // var Commands map[Command]Action
@@ -15,32 +24,7 @@ import (
 // Keybinds stores all currently bound keys.
 var Keybinds map[Key]Action
 
-func init() {
-	if err := LoadKeyBinds(); err != nil {
-		//Actions
-		/*	quit := *NewAction("Quit", "Client")
-			moveNorth := *NewAction("Move", "Client", North)
-			moveNorthEast := *NewAction("Move", "Client", NorthEast)
-			moveNorthWest := *NewAction("Move", "Client", NorthWest)
-			moveEast := *NewAction("Move", "Client", East)
-			moveSouth := *NewAction("Move", "Client", South)
-			moveSouthEast := *NewAction("Move", "Client", SouthEast)
-			moveWest := *NewAction("Move", "Client", West)
-			moveSouthWest := *NewAction("Move", "Client", SouthWest)
-
-			Keybinds = map[Key]Action{
-				Esc:            quit,
-				Key{0, 0, 'k'}: moveNorth,
-				Key{0, 0, 'u'}: moveNorthEast,
-				Key{0, 0, 'y'}: moveNorthWest,
-				Key{0, 0, 'b'}: moveSouthWest,
-				Key{0, 0, 'n'}: moveSouthEast,
-				Key{0, 0, 'l'}: moveEast,
-				Key{0, 0, 'j'}: moveSouth,
-				Key{0, 0, 'h'}: moveWest,
-			}*/
-	}
-}
+var basePath string = filepath.Join(os.Getenv("GOPATH"), "src", "github.com", "sbrow", "gorogue")
 
 // BindCommand maps a Command to an Action, overwriting any Action the
 // Command was previously mapped to.
@@ -58,6 +42,8 @@ func BindKey(key Key, Action Action) {
 // If the Key pressed is bound to an Action, the action is returned along with a nil error.
 // if the Key pressed isn't bound to an Action, a nil Action is returned along
 // with a KeyNotBoundError.
+//
+// TODO: (10) Move Input() to ui package?
 func Input() (*Action, error) {
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
@@ -85,9 +71,9 @@ func KeyPressed(key Key) (*Action, error) {
 
 }
 
-func LoadKeyBinds() error {
+func LoadKeyBinds(path string) error {
 	var tmp []KeyBind
-	data, err := ioutil.ReadFile("keybinds.json")
+	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
 	}

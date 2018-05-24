@@ -2,22 +2,11 @@ package gorogue
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
-	"log"
 	"math"
 	"net"
 	"net/rpc/jsonrpc"
-	"os"
-	"path/filepath"
-	"runtime"
 )
-
-func NewClient(c Client) error {
-	stdConn = c
-	c.Init()
-	return nil
-}
 
 // NewRemoteClient initializes a Client connection to a server.
 // NewRemoteClient must be called in order to connect to an online game.
@@ -73,18 +62,4 @@ func Dist(a, b Point) float64 {
 func HandleAction(a *Action) error {
 	Log.Println(stdConn)
 	return stdConn.HandleAction(a)
-}
-
-// SetLog sets the output for the standard Logger.
-func SetLog(name string) (*os.File, error) {
-	_, filename, _, ok := runtime.Caller(0)
-	if !ok {
-		return nil, errors.New("Something went wrong.")
-	}
-	f, err := os.Create(filepath.Join(filepath.Dir(filename), name+".log"))
-	if err != nil {
-		return nil, err
-	}
-	Log = log.New(f, "", log.LstdFlags)
-	return f, nil
 }

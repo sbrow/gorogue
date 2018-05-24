@@ -57,6 +57,12 @@ type Client interface {
 	Player() Actor
 }
 
+func NewClient(c Client) error {
+	stdConn = c
+	stdConn.Init()
+	return nil
+}
+
 // Conn is the server-side representation of a connection to a client.
 /*type Conn struct {
 	Host   string // Connection data.
