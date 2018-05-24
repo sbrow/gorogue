@@ -8,7 +8,7 @@ import (
 )
 
 type ExampleRemoteClient struct {
-	mp     *[][]Tile
+	ExampleClient
 	addr   string
 	client *rpc.Client
 }

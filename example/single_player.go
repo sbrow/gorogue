@@ -15,8 +15,8 @@ func main() {
 	defer f.Close()
 
 	c := &assets.ExampleClient{}
-	c.Init()
-	ui.Standard(c, c.World.Maps()[0])
+	NewClient(c)
+	ui.Standard(c.Map())
 
 	// Run the Client
 	ui.Run()

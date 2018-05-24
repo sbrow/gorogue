@@ -13,6 +13,12 @@ import (
 	"runtime"
 )
 
+func NewClient(c Client) error {
+	stdConn = c
+	c.Init()
+	return nil
+}
+
 // NewRemoteClient initializes a Client connection to a server.
 // NewRemoteClient must be called in order to connect to an online game.
 // For local games, use NewClient instead.
@@ -65,6 +71,7 @@ func Dist(a, b Point) float64 {
 }
 
 func HandleAction(a *Action) error {
+	Log.Println(stdConn)
 	return stdConn.HandleAction(a)
 }
 

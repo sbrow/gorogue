@@ -60,7 +60,6 @@ func (e *ExampleServer) HandleRequests() {
 			Log.Printf("%s Connected.", conn.RemoteAddr())
 			addr := fmt.Sprint(conn.RemoteAddr())
 			conn.Write([]byte(addr))
-			// e.conns = append(e.conns, addr)
 			e.Spawn(NewAction("Spawn", addr, NewPlayer("Player")))
 			go server.ServeCodec(jsonrpc.NewServerCodec(conn))
 		}

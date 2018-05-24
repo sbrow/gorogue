@@ -1,8 +1,12 @@
 package gorogue
 
 import (
+	"encoding/json"
 	"fmt"
 	termbox "github.com/nsf/termbox-go"
+	"io/ioutil"
+	"os"
+	"reflect"
 )
 
 // Commands stores all currently bound commands.
@@ -12,27 +16,29 @@ import (
 var Keybinds map[Key]Action
 
 func init() {
-	//Actions
-	quit := *NewAction("Quit", "Client")
-	moveNorth := *NewAction("Move", "Client", North)
-	moveNorthEast := *NewAction("Move", "Client", NorthEast)
-	moveNorthWest := *NewAction("Move", "Client", NorthWest)
-	moveEast := *NewAction("Move", "Client", East)
-	moveSouth := *NewAction("Move", "Client", South)
-	moveSouthEast := *NewAction("Move", "Client", SouthEast)
-	moveWest := *NewAction("Move", "Client", West)
-	moveSouthWest := *NewAction("Move", "Client", SouthWest)
+	if err := LoadKeyBinds(); err != nil {
+		//Actions
+		/*	quit := *NewAction("Quit", "Client")
+			moveNorth := *NewAction("Move", "Client", North)
+			moveNorthEast := *NewAction("Move", "Client", NorthEast)
+			moveNorthWest := *NewAction("Move", "Client", NorthWest)
+			moveEast := *NewAction("Move", "Client", East)
+			moveSouth := *NewAction("Move", "Client", South)
+			moveSouthEast := *NewAction("Move", "Client", SouthEast)
+			moveWest := *NewAction("Move", "Client", West)
+			moveSouthWest := *NewAction("Move", "Client", SouthWest)
 
-	Keybinds = map[Key]Action{
-		Esc:            quit,
-		Key{0, 0, 'k'}: moveNorth,
-		Key{0, 0, 'u'}: moveNorthEast,
-		Key{0, 0, 'y'}: moveNorthWest,
-		Key{0, 0, 'b'}: moveSouthWest,
-		Key{0, 0, 'n'}: moveSouthEast,
-		Key{0, 0, 'l'}: moveEast,
-		Key{0, 0, 'j'}: moveSouth,
-		Key{0, 0, 'h'}: moveWest,
+			Keybinds = map[Key]Action{
+				Esc:            quit,
+				Key{0, 0, 'k'}: moveNorth,
+				Key{0, 0, 'u'}: moveNorthEast,
+				Key{0, 0, 'y'}: moveNorthWest,
+				Key{0, 0, 'b'}: moveSouthWest,
+				Key{0, 0, 'n'}: moveSouthEast,
+				Key{0, 0, 'l'}: moveEast,
+				Key{0, 0, 'j'}: moveSouth,
+				Key{0, 0, 'h'}: moveWest,
+			}*/
 	}
 }
 
@@ -79,6 +85,49 @@ func KeyPressed(key Key) (*Action, error) {
 
 }
 
+func LoadKeyBinds() error {
+	var tmp []KeyBind
+	data, err := ioutil.ReadFile("keybinds.json")
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+	Keybinds = map[Key]Action{}
+	for _, bind := range tmp {
+		Keybinds[bind.Key] = bind.Action
+	}
+	return nil
+}
+
+func SaveKeyBinds() error {
+	var bind *KeyBind
+	f, err := os.Create("keybinds.json")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	f.WriteString("[\n")
+	i := 0
+	for k, v := range Keybinds {
+		f.WriteString("\t")
+		bind = &KeyBind{k, v}
+		data, err := bind.MarshalJSON()
+		if err != nil {
+			return err
+		}
+		f.Write(data)
+		if i+1 != len(Keybinds) {
+			f.WriteString(",")
+			i++
+		}
+		f.WriteString("\n")
+	}
+	f.WriteString("]")
+	return nil
+}
+
 // Command is an alternate way to call an action. If a player forgets the keyboard
 // shortcut for an Action, they can instead bring up the command bar with ':'
 // and type in the command string for the action.
@@ -95,6 +144,84 @@ type Key struct {
 	Ch  rune             // a unicode character.
 }
 
+func NewKey(str string) Key {
+	if len(str) == 1 {
+		return Key{0, 0, rune(str[0])}
+	}
+	if str == "esc" {
+		return Esc
+	}
+	return Key{}
+}
+
+func (k *Key) String() string {
+	str := ""
+	if k.Mod != 0 {
+		// Do the thing
+	}
+	if k.Key != 0 {
+		switch k.Key {
+		case Esc.Key:
+			str += "esc"
+		}
+	}
+	if k.Ch != 0 {
+		str += string(k.Ch)
+	}
+	return str
+}
+
+type KeyBind struct {
+	Key    Key
+	Action Action
+}
+
+// TODO: Try marshaling args into map[string]interface{}, see if that helps.
+type KeyBindJSON struct {
+	Key    string                     `json:"key"`
+	Action string                     `json:"action"`
+	Args   map[string]json.RawMessage `json:"args,omitempty"`
+}
+
+func (k *KeyBind) MarshalJSON() ([]byte, error) {
+	var err error
+	obj := &KeyBindJSON{
+		Key:    k.Key.String(),
+		Action: k.Action.Name,
+	}
+	obj.Args = map[string]json.RawMessage{}
+	for _, a := range k.Action.Args {
+		t := reflect.TypeOf(a)
+		v, ok := a.(json.Marshaler)
+		if ok {
+			if obj.Args[t.Name()], err = v.MarshalJSON(); err != nil {
+				return []byte{}, err
+			}
+		} else {
+			if obj.Args[t.Name()], err = json.Marshal(a); err != nil {
+				return []byte{}, err
+			}
+		}
+	}
+	return json.Marshal(obj)
+}
+
+func (k *KeyBind) UnmarshalJSON(data []byte) error {
+	var tmp map[string]interface{}
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+	k.Key = NewKey(tmp["key"].(string))
+	k.Action = *NewAction(tmp["action"].(string), "Client")
+	if _, ok := tmp["args"]; ok {
+		args := tmp["args"].(map[string]interface{})
+		for _, a := range args {
+			k.Action.Args = append(k.Action.Args, a)
+		}
+	}
+	return nil
+}
+
 // TODO: finish adding.
 var (
 	Backspace  Key = Key{0, termbox.KeyBackspace, 0}
@@ -103,7 +230,7 @@ var (
 	Enter      Key = Key{0, termbox.KeyEnter, 0}
 	Esc        Key = Key{0, termbox.KeyEsc, 0}
 	Space      Key = Key{0, termbox.KeySpace, 0}
-	Tab            = Key{0, termbox.KeyTab, 0}
+	Tab        Key = Key{0, termbox.KeyTab, 0}
 )
 
 // KeyNotBoundError is returned when a key is looked up, but it not currently

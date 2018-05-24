@@ -55,22 +55,27 @@ func (w *ExampleWorld) Move(a *Action) error {
 	}
 	caller := w.players[a.Caller]
 	ma.Target = caller
+	var pt Point
 	p := caller.Pos()
+	Log.Println(a)
+	Log.Println(p)
 	switch a.Args[0].(type) {
-	case float64:
-		pt := Direction(uint8(a.Args[0].(float64))).Point()
-		p.X += pt.X
-		p.Y += pt.Y
 	case Direction:
-		pt := a.Args[0].(Direction).Point()
-		p.X += pt.X
-		p.Y += pt.Y
+		pt = a.Args[0].(Direction).Point()
 	case Pos:
 		p = a.Args[0].(*Pos)
+	case string:
+		pt = Dir(a.Args[0].(string)).Point()
+	case float64:
+		pt = Direction(uint8(a.Args[0].(float64))).Point()
 	default:
 		return errors.New("Passed wrong args to Client.Move()")
 	}
+	Log.Println(pt)
+	p.X += pt.X
+	p.Y += pt.Y
 	ma.Pos = *p
+	Log.Println(p)
 	w.maps[ma.Pos.Map].Move(ma)
 	return nil
 }

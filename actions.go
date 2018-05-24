@@ -22,8 +22,8 @@ func NewAction(name, caller string, args ...interface{}) *Action {
 
 // MoveAction moves the target Object to the given position.
 type MoveAction struct {
-	Caller string // The originator of the Action.
-	Target Object // The name of the Object to move.
+	Caller string `json:"caller"`           // The originator of the Action.
+	Target Object `json:"target",omitempty` // The name of the Object to move.
 	Pos    Pos    // The coordinates the Object should be moved to.
 }
 

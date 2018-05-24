@@ -3,18 +3,18 @@ package assets
 import (
 	"errors"
 	. "github.com/sbrow/gorogue"
-	"log"
 )
 
 type ExampleClient struct {
 	World *ExampleWorld
+	mp    *[][]Tile
 }
 
-func (c *ExampleClient) Addr() string {
+func (e *ExampleClient) Addr() string {
 	return "[::1]"
 }
 
-func (c *ExampleClient) HandleAction(a *Action) error {
+func (e *ExampleClient) HandleAction(a *Action) error {
 	var reply *string
 
 	switch a.Name {
@@ -22,30 +22,42 @@ func (c *ExampleClient) HandleAction(a *Action) error {
 		return errors.New("Leaving...")
 	default:
 		if a.Caller == "Client" {
-			a.Caller = c.Addr()
+			a.Caller = e.Addr()
 		}
-		c.World.HandleAction(a, reply)
+		e.World.HandleAction(a, reply)
 	}
 	if reply != nil {
 		return errors.New(*reply)
 	}
+	e.Ping()
 	return nil
 }
 
-func (c *ExampleClient) Init() error {
+func (e *ExampleClient) Init() error {
 	// Create a new world.
-	c.World = NewWorld()
+	e.World = NewWorld()
 
 	// Add a map to our world.
-	c.World.NewMap(5, 5)
+	e.World.NewMap(5, 5)
+	e.mp = &[][]Tile{}
 
-	a := NewAction("Spawn", c.Addr(), NewPlayer("Player"))
-	if err := c.HandleAction(a); err != nil {
+	a := NewAction("Spawn", e.Addr(), NewPlayer("Player"))
+	*e.mp = e.World.Maps()[0].AllTiles()
+	if err := e.HandleAction(a); err != nil {
 		Log.Println(err)
 	}
 	return nil
 }
 
-func (c *ExampleClient) Player() Actor {
-	return c.World.Players()[c.Addr()]
+func (e *ExampleClient) Map() *[][]Tile {
+	return e.mp
+}
+
+func (e *ExampleClient) Ping() error {
+	*e.mp = e.World.Maps()[0].AllTiles()
+	return nil
+}
+
+func (e *ExampleClient) Player() Actor {
+	return e.World.Players()[e.Addr()]
 }

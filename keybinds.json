@@ -1,0 +1,11 @@
+[
+	{"key":"u","action":"Move","args":{"string":"NorthEast"}},
+	{"key":"esc","action":"Quit"},
+	{"key":"k","action":"Move","args":{"string":"North"}},
+	{"key":"j","action":"Move","args":{"string":"South"}},
+	{"key":"l","action":"Move","args":{"string":"East"}},
+	{"key":"y","action":"Move","args":{"string":"NorthWest"}},
+	{"key":"n","action":"Move","args":{"string":"SouthEast"}},
+	{"key":"b","action":"Move","args":{"string":"SouthWest"}},
+	{"key":"h","action":"Move","args":{"string":"West"}}
+]

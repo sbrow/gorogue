@@ -1,6 +1,9 @@
 package gorogue
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // Direction represents the cardinal and ordinal directions.
 // North points towards the top of the screen, east points to the right, etc.
@@ -8,6 +11,32 @@ import "fmt"
 // Converting between coordinates and Directions is often done with Bitwise operations,
 // hence why they are not laid out in perfect sequence.
 type Direction uint8
+
+func Dir(name string) Direction {
+	switch name {
+	case "North":
+		return North
+	case "NorthEast":
+		return NorthEast
+	case "East":
+		return East
+	case "SouthEast":
+		return SouthEast
+	case "South":
+		return South
+	case "SouthWest":
+		return SouthWest
+	case "West":
+		return West
+	case "NorthWest":
+		return NorthWest
+	}
+	return North
+}
+
+func (d Direction) MarshalJSON() ([]byte, error) {
+	return json.Marshal(d.String())
+}
 
 // Point returns d in Point form.
 func (d Direction) Point() Point {
@@ -25,6 +54,37 @@ func (d Direction) Point() Point {
 		p.X--
 	}
 	return p
+}
+
+func (d *Direction) String() string {
+	switch *d {
+	case North:
+		return "North"
+	case NorthEast:
+		return "NorthEast"
+	case East:
+		return "East"
+	case SouthEast:
+		return "SouthEast"
+	case South:
+		return "South"
+	case SouthWest:
+		return "SouthWest"
+	case West:
+		return "West"
+	case NorthWest:
+		return "NorthWest"
+	}
+	return ""
+}
+
+func (d *Direction) UnmarshalJSON(data []byte) error {
+	var tmp string
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+	*d = Dir(tmp)
+	return nil
 }
 
 const (
