@@ -3,7 +3,6 @@ package gorogue
 import (
 	"bytes"
 	"fmt"
-	"math"
 	"net"
 	"net/rpc/jsonrpc"
 )
@@ -52,12 +51,6 @@ func NewRemoteClient(c RemoteClient, host, port string) error {
 	s.SetPort(port)
 	s.HandleRequests()
 }*/
-
-func Dist(a, b Point) float64 {
-	x1, y1 := a.Ints()
-	x2, y2 := b.Ints()
-	return math.Sqrt(math.Pow(float64(x2-x1), 2) + math.Pow(float64(y2-y1), 2))
-}
 
 func HandleAction(a *Action) error {
 	Log.Println(stdConn)

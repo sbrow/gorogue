@@ -3,6 +3,7 @@ package gorogue
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 )
 
 // Direction represents the cardinal and ordinal directions.
@@ -108,6 +109,13 @@ type Point struct {
 
 func NewPt(x, y int) *Point {
 	return &Point{X: x, Y: y}
+}
+
+// Dist returns the linear distance between two points.
+func Dist(a, b Point) float64 {
+	x1, y1 := a.Ints()
+	x2, y2 := b.Ints()
+	return math.Sqrt(math.Pow(float64(x2-x1), 2) + math.Pow(float64(y2-y1), 2))
 }
 
 // Add sets the Point equal to the geometric sum of it and pt.
