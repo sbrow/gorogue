@@ -8,7 +8,7 @@ import (
 
 func main() {
 	// Set up our log
-	f, err := SetLog("local_game")
+	f, err := SetLog("local_game.log", true)
 	if err != nil {
 		panic(err)
 	}
@@ -16,7 +16,7 @@ func main() {
 
 	c := &assets.ExampleClient{}
 	NewClient(c)
-	ui.Standard(c.Map())
+	assets.StandardUI(c.Map())
 
 	// Run the Client
 	ui.Run()

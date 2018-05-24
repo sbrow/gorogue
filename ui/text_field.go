@@ -1,6 +1,5 @@
 package ui
 
-/*
 import (
 	termbox "github.com/nsf/termbox-go"
 	engine "github.com/sbrow/gorogue"
@@ -10,8 +9,8 @@ type TextField struct {
 	name   string
 	border *Border
 	bounds Bounds
-	text   string
 	prefix string
+	text   string
 }
 
 func NewTextField(name string, b Bounds) *TextField {
@@ -57,7 +56,9 @@ func (t *TextField) Popup() {
 	x += len(t.text)
 main:
 	for {
-		Draw()
+		if err := Draw(); err != nil {
+			panic(err)
+		}
 		t.Draw()
 		switch ev := termbox.PollEvent(); ev.Type {
 		case termbox.EventKey:
@@ -104,7 +105,7 @@ func (t *TextField) Name() string {
 func (t TextField) Text() string {
 	return t.text
 }
+
 func (t TextField) Type() UIElementType {
 	return UITypeTextField
 }
-*/

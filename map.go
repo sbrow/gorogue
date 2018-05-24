@@ -112,9 +112,13 @@ func (m *Map) Tick() {
 		<-i.Ch
 	}
 	m.ticks++
+
+	Log.Debugln("Map.Actors:")
 	for _, a := range m.Actors() {
-		Log.Println(a)
+		Log.Debugln(a)
 	}
+	Log.Debugln()
+
 	Log.Printf("Tick! (%d)\n=========================\n", m.ticks)
 	m.Tick()
 }

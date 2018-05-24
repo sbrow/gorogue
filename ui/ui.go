@@ -1,5 +1,4 @@
-// Package ui is responsible for drawing the user interface and interpreting
-// user input.
+// Package ui  handles user input and output for the gorogue engine.
 package ui
 
 import (
@@ -7,17 +6,25 @@ import (
 	. "github.com/sbrow/gorogue"
 )
 
+// std is the standard UI.
 var std *ui
 
-// UI holds everything a player sees in game.
+// ui holds everything a player sees in game.
 type ui struct {
 	border   *Border              // The UI's border (if any).
 	elements map[string]UIElement // Views contained in this UI.
 	size     Point
 }
 
-// New creates a new UI with a given size.
-func New(w, h int) {
+// Add adds a UIElement to this UI.
+func Add(name string, e UIElement) UIElement {
+	e.SetBounds(*InnerBounds())
+	std.elements[name] = e
+	return std.elements[name]
+}
+
+// Init sets up a new UI with the given size. Only one UI can run at any given time.
+func Init(w, h int) {
 	std = &ui{}
 	std.border = nil
 	if w < 1 || h < 1 {
@@ -28,22 +35,13 @@ func New(w, h int) {
 	std.elements = map[string]UIElement{}
 }
 
-// Add adds a UIElement to this UI.
-func Add(name string, e UIElement) UIElement {
-	e.SetBounds(*InnerBounds())
-	std.elements[name] = e
-	return std.elements[name]
-}
-
-// Draw displays the UI. UIElements are drawn in the following order:
-//
-// Views, Border.
+// Draw displays the UI. Borders are drawn after their contents.
 func Draw() error {
-	err := termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
-	if err != nil {
+	if err := termbox.Clear(termbox.ColorDefault, termbox.ColorDefault); err != nil {
 		return err
 	}
-	termbox.Flush()
+	defer termbox.Flush()
+
 	// Print each view
 	for _, e := range std.elements {
 		err := e.Draw()
@@ -57,15 +55,6 @@ func Draw() error {
 		std.border.Draw(*OuterBounds())
 	}
 	return nil
-}
-
-// Used for testing.
-func Init() {
-	err := termbox.Init()
-	if err != nil {
-		panic(err)
-	}
-	Draw()
 }
 
 func InnerBounds() *Bounds {
@@ -88,12 +77,11 @@ func OuterBounds() *Bounds {
 }
 
 // Run starts drawing the UI and accepting user input.
-func Run() {
-	err := termbox.Init()
-	defer termbox.Close()
-	if err != nil {
+func Run() error {
+	if err := termbox.Init(); err != nil {
 		panic(err)
 	}
+	defer termbox.Close()
 	termbox.SetOutputMode(termbox.Output256)
 
 	for {
@@ -102,14 +90,14 @@ func Run() {
 		}
 		action, err := Input()
 		if err != nil {
-			Log.Println("error: err")
+			Log.Println(err)
 		} else if action != nil {
 			err := HandleAction(action)
 			if err != nil {
 				if err.Error() == "Leaving..." { // TODO: Fix
-					return
+					return nil
 				}
-				panic(err)
+				return err
 			}
 		}
 	}
@@ -146,6 +134,5 @@ type UIElementType uint8
 const (
 	UITypeUI UIElementType = iota
 	UITypeView
-
-	// UITypeTextField
+	UITypeTextField
 )

@@ -63,7 +63,7 @@ func (e *ExampleRemoteClient) Map() *[][]Tile {
 }
 
 func (e *ExampleRemoteClient) Run() {
-	ui.Standard(e.Map())
+	StandardUI(e.Map())
 	ui.Run()
 }
 

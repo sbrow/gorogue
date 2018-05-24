@@ -2,6 +2,7 @@ package gorogue
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"net"
 	"net/rpc/jsonrpc"
@@ -53,6 +54,8 @@ func NewRemoteClient(c RemoteClient, host, port string) error {
 }*/
 
 func HandleAction(a *Action) error {
-	Log.Println(stdConn)
-	return stdConn.HandleAction(a)
+	if stdConn != nil {
+		return stdConn.HandleAction(a)
+	}
+	return errors.New("No client set.")
 }

@@ -8,21 +8,22 @@ import (
 )
 
 // Cells returns the current contents of the UI.
+// Returns an error if ternbox's width or height are zero.
 func Cells() ([][]termbox.Cell, error) {
 	termbox.Flush()
 	w, h := Size()
-	w2, h2 := termbox.Size()
-	if w2 == 0 || h2 == 0 {
+	maxW, maxH := termbox.Size()
+	if maxW == 0 || maxH == 0 {
 		return nil, errors.New("Termbox has no size. Has termbox been initialized?")
 	}
 	cells := termbox.CellBuffer()
 	runes := [][]termbox.Cell{}
-	for x := 0; x <= w2; x++ {
+	for x := 0; x <= maxW; x++ {
 		if x < w {
 			runes = append(runes, []termbox.Cell{})
-			for y := 0; y <= h2; y++ {
+			for y := 0; y <= maxH; y++ {
 				if y < h {
-					runes[x] = append(runes[x], cells[(y*w2)+x])
+					runes[x] = append(runes[x], cells[(y*maxW)+x])
 				}
 			}
 		}
@@ -30,12 +31,13 @@ func Cells() ([][]termbox.Cell, error) {
 	return runes, nil
 }
 
-// Print draws the given interface in termbox starting from the given location (0x, 0y).
-// Currently, this will overwrite any existing cells.
+// Print draws the given interface in termbox starting from the Cell at (x, y).
+// Print will overwrite any existing cells. v is interpreted using fmt.Print(v).
 //
-// Print will attempt to convert v to a string, and fall back on fmt.Sprint(v).
+// Carriage return ('\r') runes will cause Print to continue printing from
+// the start of the current line.
 //
-// Print returns an OutOfScreenBoundryError if the drawing exceeds termbox's size.
+// Returns an OutOfScreenBoundryError if the drawing exceeds termbox's size.
 func Print(x, y int, v ...interface{}) error {
 	defer termbox.Flush()
 	str := fmt.Sprint(v...)
@@ -52,14 +54,15 @@ func Print(x, y int, v ...interface{}) error {
 			x++
 		}
 	}
-	return OutOfScreenBoundry(NewBounds(x1, y1, x, y))
+	return outOfScreenBoundry(NewBounds(x1, y1, x, y))
 }
 
-// PrintRaw prints a string starting at the given coordinates (x, y).
-// Line break ('\n') and carriage return ('\r') characters are not handled
-// specially and will appear as spaces.
+// PrintRaw draws the given interface in termbox starting from the Cell at (x, y).
+// PrintRaw will overwrite any existing cells. v is interpreted using fmt.Print(v).
 //
-// PrintRaw returns OutOfScreenBoundryError if the drawing exceeds termbox's size.
+// New Line ('\r') and Carriage Return ('\r') are interpreted as spaces.
+//
+// Returns an OutOfScreenBoundryError if the drawing exceeds termbox's size.
 func PrintRaw(x, y int, v interface{}) error {
 	defer termbox.Flush()
 	x1, y1 := x, y
@@ -69,14 +72,14 @@ func PrintRaw(x, y int, v interface{}) error {
 		SetCell(x, y, termbox.Cell{r, fg, bg})
 		x++
 	}
-	return OutOfScreenBoundry(NewBounds(x1, y1, x, y))
+	return outOfScreenBoundry(NewBounds(x1, y1, x, y))
 }
 
-// OutOfScreenBoundry determines whether the given boundries are larger than
-// termbox's current size. If they are, it returns an OutOfScreenBoundryError.
+// outOfScreenBoundry determines whether the given boundaries are larger than
+// the UI's current size. If they are, it returns an OutOfScreenBoundryError.
 //
-// Called by functions that draw to termbox.
-func OutOfScreenBoundry(b Bounds) error {
+// Called by Draw and Print functions.
+func outOfScreenBoundry(b Bounds) error {
 	w, h := Size()
 	var x, y int
 
@@ -93,12 +96,12 @@ func OutOfScreenBoundry(b Bounds) error {
 		x, y = b[1].X, b[1].Y
 	}
 	if x != 0 || y != 0 {
-		return errors.New(fmt.Sprintf("OutOfScreenBoundryError: point (%d, %d) "+
-			"exceeds screen boundries [%d, %d]", x, y, w, h))
+		return &OutOfScreenBoundryError{x, y, w, h}
 	}
 	return nil
 }
 
+// PrintScreen returns the contents of the UI.
 func PrintScreen() ([]byte, error) {
 	var buff bytes.Buffer
 	cells, err := Cells()
@@ -112,4 +115,14 @@ func PrintScreen() ([]byte, error) {
 		buff.WriteRune('\n')
 	}
 	return buff.Bytes(), nil
+}
+
+type OutOfScreenBoundryError struct {
+	X, Y int
+	W, H int
+}
+
+func (o *OutOfScreenBoundryError) Error() string {
+	return fmt.Sprintf("OutOfScreenBoundryError: point (%d, %d) "+
+		"exceeds screen boundries [%d, %d]", o.X, o.Y, o.W, o.H)
 }

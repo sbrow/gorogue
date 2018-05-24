@@ -22,7 +22,7 @@ func SetLog(name string, debug bool) (*os.File, error) {
 	if !ok {
 		return nil, errors.New("Something went wrong.")
 	}
-	f, err := os.Create(filepath.Join(filepath.Dir(filename), name+".log"))
+	f, err := os.Create(filepath.Join(filepath.Dir(filename), name))
 	if err != nil {
 		return nil, err
 	}

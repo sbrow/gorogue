@@ -9,6 +9,6 @@ import (
 func main() {
 	var port = flag.String("port", ":6060", "The port to host from. Must include the colon.")
 	flag.Parse()
-	gorogue.SetLog("server")
+	gorogue.SetLog("server.log", true)
 	assets.NewServer(*port)
 }

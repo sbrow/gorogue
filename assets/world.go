@@ -25,9 +25,11 @@ func (e *ExampleWorld) NewMap(w, h int) {
 }
 
 func (e *ExampleWorld) HandleAction(a *Action, reply *string) error {
+	Log.Debugln("Players:")
 	for k, v := range e.players {
 		Log.Printf("[%s]=%v\n", k, v)
 	}
+	Log.Debugln()
 	var err error
 	switch a.Name {
 	case "Move":
@@ -57,8 +59,6 @@ func (w *ExampleWorld) Move(a *Action) error {
 	ma.Target = caller
 	var pt Point
 	p := caller.Pos()
-	Log.Println(a)
-	Log.Println(p)
 	switch a.Args[0].(type) {
 	case Direction:
 		pt = a.Args[0].(Direction).Point()
@@ -71,11 +71,9 @@ func (w *ExampleWorld) Move(a *Action) error {
 	default:
 		return errors.New("Passed wrong args to Client.Move()")
 	}
-	Log.Println(pt)
 	p.X += pt.X
 	p.Y += pt.Y
 	ma.Pos = *p
-	Log.Println(p)
 	w.maps[ma.Pos.Map].Move(ma)
 	return nil
 }

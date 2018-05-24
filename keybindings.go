@@ -226,5 +226,5 @@ type KeyNotBoundError struct {
 }
 
 func (k *KeyNotBoundError) Error() string {
-	return fmt.Sprintf("Key %v not bound", k.K)
+	return fmt.Sprintf("Key \"%s\" not bound", k.K.String())
 }
