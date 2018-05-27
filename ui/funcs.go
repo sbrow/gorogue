@@ -102,6 +102,7 @@ func outOfScreenBoundry(b Bounds) error {
 }
 
 // PrintScreen returns the contents of the UI.
+// TODO: Move to RenderSystem
 func PrintScreen() ([]byte, error) {
 	var buff bytes.Buffer
 	cells, err := Cells()

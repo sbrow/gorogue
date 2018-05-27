@@ -11,6 +11,7 @@ type View struct {
 	bounds Bounds
 	origin Point
 	Tiles  *[][]Tile
+	cells  *[][]termbox.Cell
 }
 
 // NewView returns a newly created view.
@@ -82,14 +83,20 @@ func (v *View) Size() (w, h int) {
 	return v.Bounds().Size()
 }
 
-// func (v *View) Tiles() [][]Tile {
-// 	b := v.Bounds()
-// 	x1, y1 := v.origin.X, v.origin.Y
-// 	x2, y2 := b[1].Ints()
-// 	x2 += x1 - 1
-// 	y2 += y1 - 1
-// 	return v.Map.TileSlice(x1, y1, x2, y2)
-// }
+func (v *View) GetTiles() *[][]termbox.Cell {
+	out := [][]termbox.Cell{}
+	tiles := *v.Tiles
+	i := 0
+	for x := 0; x < len(tiles); x++ {
+		out = append(out, []termbox.Cell{})
+		for y := 0; y < len(tiles[0]); y++ {
+			out[i] = append(out[i], tiles[x][y].Sprite)
+		}
+		i++
+	}
+	v.cells = &out
+	return v.cells
+}
 
 func (v *View) Type() UIElementType {
 	return UITypeView

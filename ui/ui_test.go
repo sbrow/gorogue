@@ -127,9 +127,9 @@ func TestFullScreen(t *testing.T) {
 		t.Fatal(err)
 	}
 	termbox.Close()
-
 	if string(runes) != want {
 		t.Fatalf("Wanted:\"\n%s\"\nGot:\"\n%s\"\n", want, string(runes))
+		// t.Fatalf("Got:\"\n%s\"\n", string(runes))
 	}
 }
 

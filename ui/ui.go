@@ -2,8 +2,11 @@
 package ui
 
 import (
+	"engo.io/ecs"
 	termbox "github.com/nsf/termbox-go"
 	. "github.com/sbrow/gorogue"
+	"github.com/sbrow/gorogue/components"
+	"github.com/sbrow/gorogue/systems"
 )
 
 // std is the standard UI.
@@ -14,11 +17,23 @@ type ui struct {
 	border   *Border              // The UI's border (if any).
 	elements map[string]UIElement // Views contained in this UI.
 	size     Point
+	world    *ecs.World
+	renderer *systems.Render
 }
 
 // Add adds a UIElement to this UI.
 func Add(name string, e UIElement) UIElement {
 	e.SetBounds(*InnerBounds())
+	ent := struct {
+		ecs.BasicEntity
+		components.Pos
+		components.Sprite
+	}{
+		ecs.NewBasic(),
+		components.Pos{e.Bounds()[0].X, e.Bounds()[0].Y},
+		components.Sprite{*e.GetTiles()},
+	}
+	std.world.AddEntity(&ent)
 	std.elements[name] = e
 	return std.elements[name]
 }
@@ -33,6 +48,14 @@ func Init(w, h int) {
 		std.size = Point{w - 1, h - 1}
 	}
 	std.elements = map[string]UIElement{}
+	std.world = &ecs.World{}
+	var renderable *systems.Renderable
+	std.world.AddSystemInterface(&systems.Render{}, renderable, nil)
+	r, ok := std.world.Systems()[0].(*systems.Render)
+	if !ok {
+		panic("System is not renderer")
+	}
+	std.renderer = r
 }
 
 // Draw displays the UI. Borders are drawn after their contents.
@@ -42,15 +65,7 @@ func Draw() error {
 	}
 	defer termbox.Flush()
 
-	// Print each view
-	for _, e := range std.elements {
-		err := e.Draw()
-		if err != nil {
-			return err
-		}
-	}
-
-	// Print the UI's border.
+	std.renderer.Update(0)
 	if std.border != nil {
 		std.border.Draw(*OuterBounds())
 	}
@@ -126,6 +141,7 @@ type UIElement interface {
 	Draw() error
 	SetBounds(b Bounds)
 	Type() UIElementType
+	GetTiles() *[][]termbox.Cell
 }
 
 // UIElementType is an enum of valid UIElements.
