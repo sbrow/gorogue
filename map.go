@@ -57,13 +57,13 @@ func (m *Map) Move(a MoveAction) error {
 
 	// Assert that the Pos points to this Map.
 	if a.Pos.Map != m.Index {
-		return errors.New("Pointing to the wrong map.")
+		return errors.New("pointing to the wrong map")
 	}
 
 	// Assert that the Pos is within the bounds of the Map.
 	if a.Pos.X >= m.Width || a.Pos.Y >= m.Height ||
 		a.Pos.X < 0 || a.Pos.Y < 0 {
-		return errors.New("Can't move outside the map.")
+		return errors.New("can't move outside the map")
 	}
 
 	// If all our assertions are correct, move the Actor.
@@ -123,12 +123,8 @@ func (m *Map) Tick() {
 	m.Tick()
 }
 
-func (m *Map) Ticked() {
-
-}
-
 // TileSlice returns the contents of all tiles within the bounds of
-// [x1, y1], [x2, y2]. TileSlice's paramaters do not need to be within the
+// [x1, y1], [x2, y2]. TileSlice's parameters do not need to be within the
 // Map's bounds, tiles outside will appear as BlankTiles
 //
 // TODO: Describe better.

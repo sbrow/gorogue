@@ -2,8 +2,9 @@ package assets
 
 import (
 	"errors"
-	. "github.com/sbrow/gorogue"
 	"math/rand"
+
+	. "github.com/sbrow/gorogue"
 )
 
 type ExampleWorld struct {
@@ -41,8 +42,10 @@ func (e *ExampleWorld) HandleAction(a *Action, reply *string) error {
 		msg := err.Error()
 		reply = &msg
 	}
-	reply = nil
-	return nil
+	if reply == nil {
+		return nil
+	}
+	return errors.New(*reply)
 }
 
 func (w *ExampleWorld) Maps() []*Map {

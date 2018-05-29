@@ -1,11 +1,28 @@
 package components
 
 import (
+	"testing"
+
 	"engo.io/ecs"
 	termbox "github.com/nsf/termbox-go"
 	"github.com/sbrow/gorogue"
-	"testing"
 )
+
+func TestActionFace(t *testing.T) {
+	e := struct {
+		ecs.BasicEntity
+		Action
+	}{
+		ecs.NewBasic(),
+		Action{Name: "Test", Caller: "Client"},
+	}
+
+	var v ActionFace
+	v = &e
+	if &e.Action != v.GetAction() {
+		t.Fatal("Action does not implement ActionFace.")
+	}
+}
 
 func TestBasicFace(t *testing.T) {
 	var b ecs.BasicEntity
@@ -26,7 +43,7 @@ func TestPosFace(t *testing.T) {
 	}
 }
 
-func TestPos_String(t *testing.T) {
+func TestPosString(t *testing.T) {
 	p := &Pos{X: 3, Y: 5}
 	want := "{3, 5}"
 	if p.String() != want {
@@ -34,7 +51,7 @@ func TestPos_String(t *testing.T) {
 	}
 }
 
-func TestPos_Ints(t *testing.T) {
+func TestPosInts(t *testing.T) {
 	a, b := 3, 5
 	p := &Pos{X: a, Y: b}
 	x, y := p.Ints()
@@ -44,7 +61,7 @@ func TestPos_Ints(t *testing.T) {
 }
 
 func TestSpriteFace(t *testing.T) {
-	s := &Sprite{Tiles: [][]termbox.Cell{[]termbox.Cell{gorogue.DefaultPlayer}}}
+	s := &Sprite{Tiles: [][]termbox.Cell{{gorogue.DefaultPlayer}}}
 	var v SpriteFace
 	v = s
 	if s != v.GetSprite() {

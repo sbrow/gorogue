@@ -10,3 +10,5 @@ graphs/
 *.out
 
 keybinds_backup\.json
+
+\.gometalinter\.json

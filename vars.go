@@ -6,8 +6,9 @@ import (
 
 var stdConn Client
 
+// Commonly used roguelike symbols.
 var (
-	DefaultPlayer = termbox.Cell{'@', termbox.ColorWhite, termbox.ColorBlack}
-	StairsUp      = termbox.Cell{'>', termbox.ColorDefault, termbox.ColorDefault}
-	StairsDown    = termbox.Cell{'<', termbox.ColorDefault, termbox.ColorDefault}
+	DefaultPlayer = termbox.Cell{Ch: '@', Fg: termbox.ColorWhite, Bg: termbox.ColorBlack}
+	StairsUp      = termbox.Cell{Ch: '>', Fg: termbox.ColorDefault, Bg: termbox.ColorDefault}
+	StairsDown    = termbox.Cell{Ch: '<', Fg: termbox.ColorDefault, Bg: termbox.ColorDefault}
 )

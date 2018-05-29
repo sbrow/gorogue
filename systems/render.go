@@ -2,9 +2,10 @@ package systems
 
 import (
 	"bytes"
-	"engo.io/ecs"
 	"errors"
 	"fmt"
+
+	"engo.io/ecs"
 	termbox "github.com/nsf/termbox-go"
 	"github.com/sbrow/gorogue/components"
 )
@@ -22,21 +23,21 @@ func (r *Render) Add(basic *ecs.BasicEntity, pos *components.Pos, sprite *compon
 
 // AddByInterface adds an entity to the system, asserting that it implements Renderable.
 // It will panic if the assertion fails.
-func (r *Render) AddByInterface(o ecs.Identifier) {
-	obj, ok := o.(Renderable)
+func (r *Render) AddByInterface(i ecs.Identifier) {
+	obj, ok := i.(Renderable)
 	if !ok {
-		panic(fmt.Sprintf("%s is not Renderable.", o))
+		panic(fmt.Sprintf("%s is not Renderable.", i))
 	}
 	r.Add(obj.GetBasicEntity(), obj.GetPos(), obj.GetSprite())
 }
 
 // Cells returns the current contents of termbox within the bounds [0, 0] x [w, h].
-// Cells returns an error if ternbox's hasn't been initialized.
+// Cells returns an error if termbox hasn't been initialized.
 func (r *Render) Cells(w, h int) ([][]termbox.Cell, error) {
 	termbox.Flush()
 	maxW, maxH := termbox.Size()
 	if maxW == 0 || maxH == 0 {
-		return nil, errors.New("Termbox has no size. Has termbox been initialized?")
+		return nil, errors.New("termbox has no size, it may not have been initialized")
 	}
 	cells := termbox.CellBuffer()
 	runes := [][]termbox.Cell{}
@@ -56,8 +57,11 @@ func (r *Render) Cells(w, h int) ([][]termbox.Cell, error) {
 // New creates a new Render system.
 func (r *Render) New(w *ecs.World) {
 	r.world = w
-	if err := termbox.Init(); err != nil {
-		panic(err)
+	if !termbox.IsInit {
+		if err := termbox.Init(); err != nil {
+			// Panicking is bad style here, but the engo API forces our hand.
+			panic(err)
+		}
 	}
 }
 
@@ -81,10 +85,10 @@ func (r *Render) PrintScreen() ([]byte, error) {
 }
 
 // Remove removes the entity from the system.
-func (r *Render) Remove(basic ecs.BasicEntity) {
+func (r *Render) Remove(e ecs.BasicEntity) {
 	i := -1
-	for j, ent := range r.ents {
-		if ent.ID() == basic.ID() {
+	for j, e := range r.ents {
+		if e.ID() == e.ID() {
 			i = j
 			break
 		}
@@ -94,14 +98,26 @@ func (r *Render) Remove(basic ecs.BasicEntity) {
 	}
 }
 
+// Size returns how many entities are in the system.
+func (r *Render) Size() int {
+	return len(r.ents)
+}
+
 // Update draws all entities in the system.
 func (r *Render) Update(dt float32) {
 	defer termbox.Flush()
 	w, h := termbox.Size()
 
 	for _, ent := range r.ents {
-		x1, y1 := ent.Pos.Ints()
 		tiles := ent.Sprite.Tiles
+		x1, y1 := ent.Pos.Ints()
+		if x1 < 0 {
+			x1 = 0
+		}
+		if y1 < 0 {
+			y1 = 0
+		}
+
 		x2 := x1 + len(tiles)
 		y2 := y1 + len(tiles[0])
 		if x2 > w+1 {
@@ -148,8 +164,6 @@ type renderEnt struct {
 // Renderable is the interface that must be filled for an entity to be added
 // to a Render system.
 type Renderable interface {
-	// ecs.BasicFace
-
 	components.BasicFace
 	components.PosFace
 	components.SpriteFace
