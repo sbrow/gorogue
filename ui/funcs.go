@@ -29,7 +29,10 @@ func Cells() ([][]termbox.Cell, error) {
 			runes = append(runes, []termbox.Cell{})
 			for y := 0; y <= maxH; y++ {
 				if y < h {
-					runes[x] = append(runes[x], cells[(y*maxW)+x])
+					i := y*maxW + x
+					if i < len(cells) {
+						runes[x] = append(runes[x], cells[i])
+					}
 				}
 			}
 		}
