@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	termbox "github.com/nsf/termbox-go"
+	"log"
 )
 
 // Cells returns the current contents of the UI.
