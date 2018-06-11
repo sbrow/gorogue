@@ -152,7 +152,7 @@ func TestInput(t *testing.T) {
 		t.Error("input system could not remove the entity")
 	}
 }
-
+/*
 func TestInputUpdate(t *testing.T) {
 	w := &ecs.World{}
 	w.AddSystem(&Input{})
@@ -167,3 +167,4 @@ func TestInputUpdate(t *testing.T) {
 		t.Error("action was not sent from input system to action system")
 	}
 }
+*/
