@@ -26,7 +26,7 @@ func (i *Input) KeyPressed(key gorogue.Key) (*gorogue.Action, error) {
 	if act, ok := i.binds[key]; ok {
 		return &act, nil
 	}
-	return nil, &gorogue.KeyNotBoundError{Key: key}
+	return nil, &gorogue.KeyNotBoundError{K: key}
 }
 
 // New Initializes the system and connects it to the world.
