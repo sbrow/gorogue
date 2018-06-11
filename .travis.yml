@@ -2,6 +2,7 @@ language: go
 
 addons:
   apt_packages:
+  - gnome-terminal
   - libgl1-mesa-dev
   - libasound2-dev
   - xorg-dev
@@ -13,5 +14,5 @@ install:
 
 script:
   - PATH="$HOME/gopath/bin:$PATH"
-  - go test ./... -v -covermode=count -coverprofile=cover.out
+  - gnome-terminal -e 'go test ./... -v -covermode=count -coverprofile=cover.out'
   - goveralls -coverprofile cover.out -service=travis-ci -repotoken $TOKEN

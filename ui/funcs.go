@@ -16,11 +16,9 @@ func Cells() ([][]termbox.Cell, error) {
 	maxW, maxH := termbox.Size()
 	if maxW == 0 || maxH == 0 {
 		if !termbox.IsInit {
-			return nil, errors.New("cells cannot be returned- termbox has not been initialized")
+			return nil, errors.New("termbox not initialized")
 		}
-		maxW = 80
-		maxH = 24
-		log.Println("Termbox has been initialized, but does not have size, assuming default (80x24).")
+		return nil, errors.New("termbox initialized, but has no size")
 	}
 	cells := termbox.CellBuffer()
 	runes := [][]termbox.Cell{}
