@@ -8,7 +8,7 @@ import (
 
 func main() {
 	// Set up our log
-	f, err := SetLog("local_game.log", true)
+	f, err := gorogue.SetLog("local_game.log", true)
 	if err != nil {
 		panic(err)
 	}
