@@ -3,6 +3,7 @@ package gorogue
 import (
 	// "encoding/json"
 	"fmt"
+
 	termbox "github.com/nsf/termbox-go"
 	// . "github.com/sbrow/gorogue"
 	"testing"
@@ -26,6 +27,7 @@ func TestTermbox(t *testing.T) {
 	cells := termbox.CellBuffer()
 	termbox.SetCell(0, 0, 'x', termbox.ColorDefault, termbox.ColorDefault)
 	termbox.SetCell(1, 0, 'x', termbox.ColorDefault, termbox.ColorDefault)
+	termbox.Flush()
 	termbox.Close()
 	fmt.Println(w, h, len(cells))
 	got := fmt.Sprint(string(cells[0].Ch), string(cells[1].Ch))
