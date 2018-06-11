@@ -22,8 +22,16 @@ func TestTermbox(t *testing.T) {
 	if err := termbox.Init(); err != nil {
 		t.Fatal(err)
 	}
-	defer termbox.Close()
-	fmt.Println(termbox.Size())
+	w, h := termbox.Size()
+	cells := termbox.CellBuffer()
+	termbox.SetCell(0, 0, 'x', termbox.ColorDefault, termbox.ColorDefault)
+	termbox.SetCell(1, 0, 'x', termbox.ColorDefault, termbox.ColorDefault)
+	termbox.Close()
+	fmt.Println(w, h, len(cells))
+	got := fmt.Sprint(string(cells[0].Ch), string(cells[1].Ch))
+	if got != "xx" {
+		t.Errorf("wanted: %s\ngot: %s", "xx", got)
+	}
 }
 
 /*

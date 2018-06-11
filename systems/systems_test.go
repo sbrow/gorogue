@@ -152,6 +152,7 @@ func TestInput(t *testing.T) {
 		t.Error("input system could not remove the entity")
 	}
 }
+
 /*
 func TestInputUpdate(t *testing.T) {
 	w := &ecs.World{}
