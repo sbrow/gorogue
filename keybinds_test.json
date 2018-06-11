@@ -1,11 +1,11 @@
 [
-	{"key":"h","action":"Move","args":{"string":"West"}},
-	{"key":"k","action":"Move","args":{"string":"North"}},
-	{"key":"n","action":"Move","args":{"string":"SouthEast"}},
 	{"key":"b","action":"Move","args":{"string":"SouthWest"}},
+	{"key":"h","action":"Move","args":{"string":"West"}},
 	{"key":"esc","action":"Quit"},
 	{"key":"y","action":"Move","args":{"string":"NorthWest"}},
+	{"key":"k","action":"Move","args":{"string":"North"}},
+	{"key":"l","action":"Move","args":{"string":"East"}},
+	{"key":"n","action":"Move","args":{"string":"SouthEast"}},
 	{"key":"j","action":"Move","args":{"string":"South"}},
-	{"key":"u","action":"Move","args":{"string":"NorthEast"}},
-	{"key":"l","action":"Move","args":{"string":"East"}}
+	{"key":"u","action":"Move","args":{"string":"NorthEast"}}
 ]

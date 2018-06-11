@@ -3,23 +3,25 @@ package gorogue
 import (
 	"encoding/json"
 	"fmt"
-	// "io/ioutil"
+	"io/ioutil"
 	"os"
+	"sort"
+	"strings"
 	"testing"
 )
 
 func TestLoadSaveKeybinds(t *testing.T) {
-	want := `[
-	{"key":"h","action":"Move","args":{"string":"West"}},
-	{"key":"k","action":"Move","args":{"string":"North"}},
-	{"key":"n","action":"Move","args":{"string":"SouthEast"}},
+	want := strings.Split(`[,
 	{"key":"b","action":"Move","args":{"string":"SouthWest"}},
 	{"key":"esc","action":"Quit"},
-	{"key":"y","action":"Move","args":{"string":"NorthWest"}},
+	{"key":"h","action":"Move","args":{"string":"West"}},
 	{"key":"j","action":"Move","args":{"string":"South"}},
+	{"key":"k","action":"Move","args":{"string":"North"}},
+	{"key":"l","action":"Move","args":{"string":"East"}},
+	{"key":"n","action":"Move","args":{"string":"SouthEast"}},
 	{"key":"u","action":"Move","args":{"string":"NorthEast"}},
-	{"key":"l","action":"Move","args":{"string":"East"}}
-]`
+	{"key":"y","action":"Move","args":{"string":"NorthWest"}},
+],`, "\n")
 	filename := "keybinds_test.json"
 
 	f, err := os.Create(filename)
@@ -50,8 +52,17 @@ func TestLoadSaveKeybinds(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if string(data) != want {
-		fmt.Printf("Wanted:\"\n%s\"\nGot:\"\n%s\"\n", want, string(data))
+	got := strings.Split(string(data), "\n")
+	for i, line := range got {
+		if !strings.HasSuffix(line, ",") {
+			got[i] += ","
+		}
+	}
+	sort.Strings(want)
+	sort.Strings(got)
+	if strings.Join(got, "\n") != strings.Join(want, "\n") {
+		// if !reflect.DeepEqual(got, want) {
+		fmt.Printf("Wanted:\"\n%s\"\nGot:\"\n%s\"\n", strings.Join(want, "\n"), strings.Join(got, "\n"))
 	}
 }
 
