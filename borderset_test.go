@@ -41,5 +41,4 @@ func TestBorder(t *testing.T) {
 	termbox.SetCell(w-1, h-1, s[10], termbox.ColorDefault, termbox.ColorBlack)
 
 	termbox.Flush()
-	_ = termbox.PollEvent()
 }
