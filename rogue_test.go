@@ -2,8 +2,8 @@ package gorogue
 
 import (
 	// "encoding/json"
-	// "fmt"
-	// termbox "github.com/nsf/termbox-go"
+	"fmt"
+	termbox "github.com/nsf/termbox-go"
 	// . "github.com/sbrow/gorogue"
 	"testing"
 )
@@ -16,6 +16,14 @@ func TestDist(t *testing.T) {
 	if d != want {
 		t.Fatalf("Wanted: %.4f\nGot: %.4f\n", want, d)
 	}
+}
+
+func TestTermbox(t *testing.T) {
+	if err := termbox.Init(); err != nil {
+		t.Fatal(err)
+	}
+	defer termbox.Close()
+	fmt.Println(termbox.Size())
 }
 
 /*
